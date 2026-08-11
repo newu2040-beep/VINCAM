@@ -478,7 +478,7 @@ data class FilterPreset(
             ),
             FilterPreset(
                 id = "lut_fuji_velvia",
-                name = "Fuji Velvia",
+                name = "Fuji Velvia 50",
                 category = FilterCategory.FILM,
                 description = "Ultra-vibrant landscape film with lush greens and vivid skies",
                 colorMatrix = floatArrayOf(
@@ -488,6 +488,130 @@ data class FilterPreset(
                     0f, 0f, 0f, 1f, 0f
                 ),
                 saturationOffset = 0.35f
+            ),
+            FilterPreset(
+                id = "lut_fuji_pro400h",
+                name = "Fuji Pro 400H",
+                category = FilterCategory.FILM,
+                description = "Airy pastel portrait film with soft cyan-magenta balance",
+                colorMatrix = floatArrayOf(
+                    1.05f, 0.05f, 0.08f, 0f, 12f,
+                    0.02f, 1.10f, 0.05f, 0f, 10f,
+                    0.05f, 0.02f, 1.18f, 0f, 16f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                temperatureOffset = -10f,
+                grainLevel = 0.25f
+            ),
+            FilterPreset(
+                id = "lut_fuji_classic_chrome",
+                name = "Fuji Classic Chrome",
+                category = FilterCategory.FILM,
+                description = "Documentary film look with muted saturation and deep shadows",
+                colorMatrix = floatArrayOf(
+                    1.08f, -0.04f, -0.02f, 0f, 5f,
+                    -0.02f, 0.98f, -0.02f, 0f, 4f,
+                    -0.04f, -0.02f, 0.92f, 0f, 0f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                contrastOffset = 0.25f,
+                saturationOffset = -0.20f
+            ),
+            FilterPreset(
+                id = "lut_fuji_superia_400",
+                name = "Fuji Superia 400",
+                category = FilterCategory.FILM,
+                description = "Classic 90s consumer print film with warm greenish tints",
+                colorMatrix = floatArrayOf(
+                    1.12f, 0.04f, -0.04f, 0f, 14f,
+                    0.02f, 1.15f, -0.02f, 0f, 16f,
+                    -0.05f, 0.02f, 0.95f, 0f, -5f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                temperatureOffset = 15f,
+                grainLevel = 0.30f
+            ),
+            FilterPreset(
+                id = "lut_fuji_astia",
+                name = "Fuji Astia",
+                category = FilterCategory.FILM,
+                description = "Smooth portrait transparency film with soft skin tones",
+                colorMatrix = floatArrayOf(
+                    1.10f, 0.06f, -0.02f, 0f, 16f,
+                    0.04f, 1.08f, 0.00f, 0f, 12f,
+                    -0.02f, 0.02f, 0.98f, 0f, 5f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                contrastOffset = -0.05f
+            ),
+            FilterPreset(
+                id = "lut_kodak_portra_400",
+                name = "Kodak Portra 400",
+                category = FilterCategory.FILM,
+                description = "Warm golden portrait film with exceptional skin rendering",
+                colorMatrix = floatArrayOf(
+                    1.20f, 0.06f, -0.05f, 0f, 22f,
+                    0.04f, 1.10f, -0.02f, 0f, 14f,
+                    -0.05f, 0.02f, 0.88f, 0f, -10f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                temperatureOffset = 20f,
+                grainLevel = 0.25f
+            ),
+            FilterPreset(
+                id = "lut_cinestill_800t",
+                name = "CineStill 800T",
+                category = FilterCategory.CINEMA,
+                description = "Tungsten movie film stock with red halation and cool night balance",
+                colorMatrix = floatArrayOf(
+                    1.25f, -0.10f, 0.05f, 0f, 25f,
+                    -0.08f, 1.05f, 0.12f, 0f, 5f,
+                    0.02f, 0.05f, 1.35f, 0f, 28f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                temperatureOffset = -25f,
+                vignetteLevel = 0.25f
+            ),
+            FilterPreset(
+                id = "lut_nostalgic_warm",
+                name = "Nostalgic Warmth",
+                category = FilterCategory.RETRO,
+                description = "Golden hour 80s photo album nostalgia with soft amber glow",
+                colorMatrix = floatArrayOf(
+                    1.28f, 0.10f, -0.10f, 0f, 28f,
+                    0.08f, 1.12f, -0.05f, 0f, 18f,
+                    -0.10f, -0.02f, 0.82f, 0f, -12f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                temperatureOffset = 30f,
+                grainLevel = 0.35f
+            ),
+            FilterPreset(
+                id = "lut_vintage_sepia",
+                name = "Vintage Sepia",
+                category = FilterCategory.RETRO,
+                description = "Classic warm monochrome sepia print finish",
+                colorMatrix = floatArrayOf(
+                    0.393f * 1.2f, 0.769f * 1.1f, 0.189f, 0f, 15f,
+                    0.349f * 1.1f, 0.686f * 1.1f, 0.168f, 0f, 10f,
+                    0.272f, 0.534f, 0.131f, 0f, 0f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                grainLevel = 0.40f
+            ),
+            FilterPreset(
+                id = "lut_bw_high_contrast",
+                name = "B&W High Contrast",
+                category = FilterCategory.FILM,
+                description = "Dramatic high-contrast street photography monochrome",
+                colorMatrix = floatArrayOf(
+                    0.35f, 0.55f, 0.10f, 0f, -15f,
+                    0.35f, 0.55f, 0.10f, 0f, -15f,
+                    0.35f, 0.55f, 0.10f, 0f, -15f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                contrastOffset = 0.45f,
+                grainLevel = 0.50f
             ),
             FilterPreset(
                 id = "lut_cyberpunk_neon",

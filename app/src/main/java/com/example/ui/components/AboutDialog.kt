@@ -127,13 +127,13 @@ fun AboutBottomSheet(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = "VinCam Studio v9.5",
+                    text = "VinCam Studio v10.9",
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Black
                 )
                 Text(
-                    text = "Build 950 • Production Native Android",
+                    text = "Build 1090 • Production Native Android",
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold

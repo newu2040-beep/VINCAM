@@ -67,7 +67,7 @@ fun OverlayCanvas(
         val widthPx = constraints.maxWidth.toFloat()
         val heightPx = constraints.maxHeight.toFloat()
 
-        uiState.overlays.sortedBy { it.zIndex }.forEach { item ->
+        uiState.overlays.filter { it.type != OverlayType.FRAME }.sortedBy { it.zIndex }.forEach { item ->
             val isSelected = uiState.selectedOverlayId == item.id
             val offsetX = (item.xRatio * widthPx).toInt()
             val offsetY = (item.yRatio * heightPx).toInt()

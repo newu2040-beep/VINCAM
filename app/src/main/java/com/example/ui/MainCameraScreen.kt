@@ -147,9 +147,12 @@ fun MainCameraScreen(
                     onZoomChange = { zoom -> viewModel.setZoomRatio(zoom) },
                     onPhotoCaptured = { bitmap ->
                         viewModel.processAndSaveCapturedPhoto(bitmap) { uri -> }
+                        com.example.util.NotificationHelper.showPhotoCapturedNotification(context)
                     },
                     onVideoCaptureFinished = { videoFile ->
+                        val duration = uiState.recordingDurationSeconds
                         viewModel.processAndSaveCapturedVideo(videoFile) { uri -> }
+                        com.example.util.NotificationHelper.showVideoStoppedNotification(context, duration)
                     },
                     setCaptureController = { controller -> captureController = controller },
                     onExposureChanged = { ev -> viewModel.setExposureEv(ev) },
@@ -196,6 +199,7 @@ fun MainCameraScreen(
                     onSwitchCamera = { viewModel.toggleCameraLens() },
                     onOpenSettings = { viewModel.openDialogOrSheet("VIDEO_CONFIG") },
                     onToggleTune = { showExposureSliders = !showExposureSliders },
+                    onOpenFrames = { viewModel.openDialogOrSheet("OVERLAYS") },
                     modifier = Modifier.align(Alignment.TopCenter)
                 )
 
@@ -206,11 +210,17 @@ fun MainCameraScreen(
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Pro Mode Specific Workspace Controls
-                    AnimatedVisibility(visible = uiState.currentMode == CameraMode.PRO) {
-                        ProModeControlsOverlay(
+                    // CC Mode Specific Live Color Grading Workspace
+                    AnimatedVisibility(visible = uiState.currentMode == CameraMode.CC) {
+                        com.example.ui.components.CcModeControlsOverlay(
                             uiState = uiState,
-                            onUpdateProSettings = { transform -> viewModel.updateProSettings(transform) }
+                            onSetExposureEv = { ev -> viewModel.setExposureEv(ev) },
+                            onSetContrast = { contrast -> viewModel.setCcContrast(contrast) },
+                            onSetSaturation = { sat -> viewModel.setCcSaturation(sat) },
+                            onSetTemperature = { temp -> viewModel.setTemperatureOffset(temp) },
+                            onSetTint = { tint -> viewModel.setCcTint(tint) },
+                            onSetGrain = { grain -> viewModel.setCcGrain(grain) },
+                            onResetAllCc = { viewModel.resetCcColorGrading() }
                         )
                     }
 
@@ -246,7 +256,7 @@ fun MainCameraScreen(
                             
                             val performCapture = {
                                 when (uiState.currentMode) {
-                                    CameraMode.PHOTO, CameraMode.NIGHT, CameraMode.PRO -> {
+                                    CameraMode.PHOTO, CameraMode.NIGHT, CameraMode.CC -> {
                                         captureController?.takePhoto()
                                     }
                                     CameraMode.VIDEO -> {
@@ -275,7 +285,7 @@ fun MainCameraScreen(
                             }
                         },
                         onLongPressShutter = {
-                            if (uiState.currentMode == CameraMode.PHOTO || uiState.currentMode == CameraMode.NIGHT || uiState.currentMode == CameraMode.PRO) {
+                            if (uiState.currentMode == CameraMode.PHOTO || uiState.currentMode == CameraMode.NIGHT || uiState.currentMode == CameraMode.CC) {
                                 viewModel.showToast("🔥 BURST SHOT (5 Photos)")
                                 captureController?.takeBurstShot(5)
                             }
@@ -297,9 +307,9 @@ fun MainCameraScreen(
 
                 // Modal Bottom Sheets
                 when (uiState.activeDialogOrSheet) {
-                    "PRO_SETTINGS" -> {
+                    "CC_MODE" -> {
                         LaunchedEffect(Unit) {
-                            viewModel.setCameraMode(CameraMode.PRO)
+                            viewModel.setCameraMode(CameraMode.CC)
                             viewModel.closeDialogOrSheet()
                         }
                     }

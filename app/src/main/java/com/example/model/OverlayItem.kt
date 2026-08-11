@@ -43,11 +43,13 @@ object DefaultOverlayLibrary {
     val FRAME_PRESETS = listOf(
         "None",
         "35mm Film Strip",
+        "Kodak 400 Film",
         "Vintage Polaroid",
         "Retro Viewfinder",
         "Classic Date Stamp",
         "Cinema Widescreen Border",
-        "Chunky Retro Frame"
+        "Chunky Retro Frame",
+        "CRT Scanlines"
     )
 
     val FONTS = listOf(

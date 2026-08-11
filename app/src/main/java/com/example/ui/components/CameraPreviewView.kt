@@ -86,6 +86,7 @@ import androidx.core.content.ContextCompat
 import com.example.model.CameraMode
 import com.example.model.FilterPreset
 import com.example.model.OverlayItem
+import com.example.model.OverlayType
 import com.example.model.VideoConfig
 import com.example.model.VideoFps
 import com.example.model.VideoResolution
@@ -253,12 +254,7 @@ fun CameraPreviewContainer(
 
                                 val processedBitmap = applyFilterToBitmap(
                                     source = rotatedBitmap,
-                                    filter = uiState.selectedFilter,
-                                    intensity = uiState.filterIntensity,
-                                    exposureEv = uiState.exposureEv,
-                                    tempOffset = uiState.temperatureOffset,
-                                    overlays = uiState.overlays,
-                                    aspectRatio = uiState.aspectRatio
+                                    uiState = uiState
                                 )
                                 mainHandler.post { onPhotoCaptured(processedBitmap) }
                             } catch (e: Exception) {
@@ -275,6 +271,13 @@ fun CameraPreviewContainer(
                         }
                     }
                 )
+                if (uiState.isShutterSoundEnabled) {
+                    try {
+                        mediaActionSound.play(android.media.MediaActionSound.SHUTTER_CLICK)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
             }
 
             override fun takeBurstShot(count: Int) {
@@ -472,9 +475,12 @@ fun CameraPreviewContainer(
                 }
             )
 
+            val selectedFrameName = uiState.overlays.find { it.type == OverlayType.FRAME }?.assetNameOrEmoji ?: "None"
+
             // Aesthetic Photo Frame Overlay over Camera Preview
             AestheticPhotoFrameOverlay(
                 aspectRatio = uiState.aspectRatio,
+                frameName = selectedFrameName,
                 primaryColor = MaterialTheme.colorScheme.primary
             )
 
@@ -568,28 +574,25 @@ fun createSyntheticPhotoBitmap(uiState: VinCamUiState): Bitmap {
         isFakeBoldText = true
         textAlign = Paint.Align.CENTER
     }
-    canvas.drawText("VINCAM 10.8 PRO", width / 2f, height - 140f, textPaint)
+    canvas.drawText("VINCAM V10.9 RETRO", width / 2f, height - 140f, textPaint)
 
     return applyFilterToBitmap(
         source = bitmap,
-        filter = uiState.selectedFilter,
-        intensity = uiState.filterIntensity,
-        exposureEv = uiState.exposureEv,
-        tempOffset = uiState.temperatureOffset,
-        overlays = uiState.overlays,
-        aspectRatio = uiState.aspectRatio
+        uiState = uiState
     )
 }
 
 fun applyFilterToBitmap(
     source: Bitmap,
-    filter: FilterPreset,
-    intensity: Float,
-    exposureEv: Float,
-    tempOffset: Float,
-    overlays: List<OverlayItem>,
-    aspectRatio: String = "16:9"
+    uiState: VinCamUiState
 ): Bitmap {
+    val filter = uiState.selectedFilter
+    val intensity = uiState.filterIntensity
+    val exposureEv = uiState.exposureEv
+    val tempOffset = uiState.temperatureOffset
+    val overlays = uiState.overlays
+    val aspectRatio = uiState.aspectRatio
+
     val srcWidth = source.width
     val srcHeight = source.height
 
@@ -648,7 +651,7 @@ fun applyFilterToBitmap(
             textAlign = Paint.Align.CENTER
         }
         canvas.drawText(
-            "VINCAM 10.8 • 2026",
+            "VINCAM 10.9 • 2026",
             finalWidth / 2f,
             finalHeight - (bottomTabHeight * 0.35f),
             textPaint
@@ -668,6 +671,24 @@ fun applyFilterToBitmap(
     arr[4] += tempShift
     arr[14] -= tempShift
 
+    // Apply Live CC (Color Correction) Parameters
+    if (uiState.ccContrast != 0.0f) {
+        val contrastScale = 1.0f + uiState.ccContrast
+        val contrastTrans = (-0.5f * contrastScale + 0.5f) * 255f
+        arr[0] *= contrastScale
+        arr[6] *= contrastScale
+        arr[12] *= contrastScale
+        arr[4] += contrastTrans
+        arr[9] += contrastTrans
+        arr[14] += contrastTrans
+    }
+
+    if (uiState.ccTint != 0.0f) {
+        val tintShift = uiState.ccTint * 0.4f
+        arr[4] += tintShift // Magenta
+        arr[9] -= tintShift // Green
+    }
+
     paint.colorFilter = ColorMatrixColorFilter(arr)
     canvas.drawBitmap(
         croppedSource,
@@ -676,13 +697,18 @@ fun applyFilterToBitmap(
         paint
     )
 
-    // Render Text and Overlays onto captured bitmap
+    // Draw selected retro frame onto captured photo bitmap
+    val selectedFrame = overlays.find { it.type == OverlayType.FRAME }?.assetNameOrEmoji ?: "None"
+    val activeFrame = if (selectedFrame != "None") selectedFrame else if (isPolaroid) "Vintage Polaroid" else "None"
+    drawRetroFrameOnBitmapCanvas(canvas, finalWidth, finalHeight, activeFrame, borderPadding, bottomTabHeight)
+
+    // Render Text and Emoji Overlays onto captured bitmap
     val overlayPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = finalWidth * 0.05f
         color = android.graphics.Color.WHITE
     }
 
-    overlays.forEach { item ->
+    overlays.filter { it.type != OverlayType.FRAME }.forEach { item ->
         val x = borderPadding + (croppedWidth * item.xRatio)
         val y = borderPadding + (croppedHeight * item.yRatio)
         if (item.textContent.isNotBlank()) {
@@ -695,13 +721,155 @@ fun applyFilterToBitmap(
     return result
 }
 
+fun drawRetroFrameOnBitmapCanvas(
+    canvas: Canvas,
+    width: Int,
+    height: Int,
+    frameName: String,
+    borderPadding: Int,
+    bottomTabHeight: Int
+) {
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val textPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    when (frameName) {
+        "Vintage Polaroid" -> {
+            textPaint.color = android.graphics.Color.DKGRAY
+            textPaint.textSize = width * 0.035f
+            textPaint.isFakeBoldText = true
+            textPaint.textAlign = Paint.Align.CENTER
+            canvas.drawText("VINCAM 10.9 • 2026", width / 2f, height - (bottomTabHeight * 0.35f), textPaint)
+        }
+        "35mm Film Strip", "Kodak 400 Film" -> {
+            val border = width * 0.04f
+            paint.color = android.graphics.Color.parseColor("#181818")
+            canvas.drawRect(0f, 0f, width.toFloat(), border, paint)
+            canvas.drawRect(0f, height - border, width.toFloat(), height.toFloat(), paint)
+            canvas.drawRect(0f, 0f, border, height.toFloat(), paint)
+            canvas.drawRect(width - border, 0f, width.toFloat(), height.toFloat(), paint)
+
+            textPaint.color = android.graphics.Color.parseColor("#FFB300")
+            textPaint.textSize = width * 0.025f
+            textPaint.isFakeBoldText = true
+            textPaint.textAlign = Paint.Align.CENTER
+            canvas.drawText("KODAK PORTRA 400 • 35MM SAFETY FILM", width / 2f, border * 0.75f, textPaint)
+        }
+        "Classic Date Stamp" -> {
+            textPaint.color = android.graphics.Color.parseColor("#FF6D00")
+            textPaint.textSize = width * 0.045f
+            textPaint.isFakeBoldText = true
+            textPaint.textAlign = Paint.Align.RIGHT
+            canvas.drawText("'98 12 25", width - (width * 0.05f), height - (height * 0.05f), textPaint)
+        }
+        "Cinema Widescreen Border" -> {
+            val barH = height * 0.06f
+            paint.color = android.graphics.Color.BLACK
+            canvas.drawRect(0f, 0f, width.toFloat(), barH, paint)
+            canvas.drawRect(0f, height - barH, width.toFloat(), height.toFloat(), paint)
+            textPaint.color = android.graphics.Color.parseColor("#00E5FF")
+            textPaint.textSize = width * 0.022f
+            textPaint.isFakeBoldText = true
+            textPaint.textAlign = Paint.Align.CENTER
+            canvas.drawText("ANAMORPHIC CINEMA 2.39:1", width / 2f, barH * 0.7f, textPaint)
+        }
+        "Chunky Retro Frame" -> {
+            val frameThickness = width * 0.05f
+            paint.color = android.graphics.Color.parseColor("#F0EBE1")
+            canvas.drawRect(0f, 0f, width.toFloat(), frameThickness, paint)
+            canvas.drawRect(0f, height - frameThickness, width.toFloat(), height.toFloat(), paint)
+            canvas.drawRect(0f, 0f, frameThickness, height.toFloat(), paint)
+            canvas.drawRect(width - frameThickness, 0f, width.toFloat(), height.toFloat(), paint)
+        }
+    }
+}
+
 @Composable
 fun AestheticPhotoFrameOverlay(
     aspectRatio: String,
+    frameName: String = "None",
     primaryColor: Color
 ) {
-    when (aspectRatio) {
-        "POLAROID" -> {
+    val activeFrame = if (frameName != "None") frameName else when (aspectRatio) {
+        "POLAROID" -> "Vintage Polaroid"
+        "2.39:1" -> "Cinema Widescreen Border"
+        else -> "None"
+    }
+
+    when (activeFrame) {
+        "35mm Film Strip" -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .border(8.dp, Color(0xFF111111), RoundedCornerShape(4.dp))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(14.dp)
+                        .background(Color(0xFF111111))
+                        .align(Alignment.TopCenter)
+                        .padding(horizontal = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(8) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp, 6.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color.White.copy(alpha = 0.2f))
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(14.dp)
+                        .background(Color(0xFF111111))
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(8) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp, 6.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color.White.copy(alpha = 0.2f))
+                        )
+                    }
+                }
+                Text(
+                    text = "KODAK SAFETY FILM • 35MM",
+                    color = Color(0xFFFFB300),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 1.dp)
+                )
+            }
+        }
+        "Kodak 400 Film" -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .border(6.dp, Color(0xFF1E1E1E), RoundedCornerShape(2.dp))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF1E1E1E))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .align(Alignment.TopCenter),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("KODAK PORTRA 400", color = Color(0xFFFFB300), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    Text("• 24A • 36", color = Color(0xFFFFB300), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    Text("SAFETY FILM", color = Color(0xFFFFB300), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        "Vintage Polaroid" -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -711,12 +879,12 @@ fun AestheticPhotoFrameOverlay(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .height(32.dp)
+                        .height(34.dp)
                         .background(Color.White),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "VINCAM 9.5 • DEC '26",
+                        text = "VINCAM RETRO • 2026",
                         color = Color.DarkGray,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -725,7 +893,62 @@ fun AestheticPhotoFrameOverlay(
                 }
             }
         }
-        "2.39:1" -> {
+        "Retro Viewfinder" -> {
+            Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width
+                    val h = size.height
+                    val strokeWidth = 2.dp.toPx()
+                    val len = 16.dp.toPx()
+                    val bracketColor = Color(0xFF00E5FF)
+
+                    drawLine(bracketColor, Offset(0f, 0f), Offset(len, 0f), strokeWidth)
+                    drawLine(bracketColor, Offset(0f, 0f), Offset(0f, len), strokeWidth)
+
+                    drawLine(bracketColor, Offset(w, 0f), Offset(w - len, 0f), strokeWidth)
+                    drawLine(bracketColor, Offset(w, 0f), Offset(w, len), strokeWidth)
+
+                    drawLine(bracketColor, Offset(0f, h), Offset(len, h), strokeWidth)
+                    drawLine(bracketColor, Offset(0f, h), Offset(0f, h - len), strokeWidth)
+
+                    drawLine(bracketColor, Offset(w, h), Offset(w - len, h), strokeWidth)
+                    drawLine(bracketColor, Offset(w, h), Offset(w, h - len), strokeWidth)
+
+                    drawLine(Color.White.copy(alpha = 0.5f), Offset(w / 2 - 8.dp.toPx(), h / 2), Offset(w / 2 + 8.dp.toPx(), h / 2), 1.dp.toPx())
+                    drawLine(Color.White.copy(alpha = 0.5f), Offset(w / 2, h / 2 - 8.dp.toPx()), Offset(w / 2, h / 2 + 8.dp.toPx()), 1.dp.toPx())
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter).padding(4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("• REC", color = Color.Red, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text("🔋 98%", color = Color.Green, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).padding(4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("AF-C", color = Color(0xFFFFCC00), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text("+0.3 EV", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        "Classic Date Stamp" -> {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Text(
+                    text = "'98 12 25",
+                    color = Color(0xFFFF6D00),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = 12.dp, end = 12.dp)
+                )
+            }
+        }
+        "Cinema Widescreen Border" -> {
             Box(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier
@@ -736,7 +959,7 @@ fun AestheticPhotoFrameOverlay(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "ANAMORPHIC 2.39:1 • T2.8 • 24 FPS",
+                        text = "ANAMORPHIC CINEMA • T2.8 • 24 FPS",
                         color = primaryColor,
                         fontSize = 8.sp,
                         fontWeight = FontWeight.Bold
@@ -751,38 +974,29 @@ fun AestheticPhotoFrameOverlay(
                 )
             }
         }
-        "4:3" -> {
+        "Chunky Retro Frame" -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .border(6.dp, Color(0xFF141414), RoundedCornerShape(2.dp))
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                        .align(Alignment.TopCenter),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("KODAK 400", color = Color(0xFFFFB300), fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                    Text("• 24A •", color = Color(0xFFFFB300), fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                    Text("SAFETY FILM", color = Color(0xFFFFB300), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    .border(12.dp, Color(0xFFF0EBE1), RoundedCornerShape(16.dp))
+                    .padding(2.dp)
+                    .border(1.5.dp, Color(0xFF333333), RoundedCornerShape(14.dp))
+            )
+        }
+        "CRT Scanlines" -> {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val step = 6.dp.toPx()
+                var y = 0f
+                while (y < size.height) {
+                    drawLine(
+                        color = Color.Black.copy(alpha = 0.15f),
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                    y += step
                 }
             }
-        }
-        "1:1" -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .border(8.dp, Color(0xFFFAF8F5), RoundedCornerShape(6.dp))
-            )
-        }
-        "9:16" -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .border(2.dp, primaryColor.copy(alpha = 0.8f), RoundedCornerShape(12.dp))
-            )
         }
     }
 }

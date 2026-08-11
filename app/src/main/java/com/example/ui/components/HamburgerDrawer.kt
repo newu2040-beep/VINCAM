@@ -110,7 +110,7 @@ fun HamburgerDrawerContent(
                     letterSpacing = 2.sp
                 )
                 Text(
-                    text = "RETRO STUDIO • V9.5",
+                    text = "RETRO STUDIO • V10.9",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -131,12 +131,10 @@ fun HamburgerDrawerContent(
         )
 
         // Menu Items
-        DrawerMenuItem(icon = Icons.Default.Tune, title = "Pro Mode Workspace") { onNavigate("PRO_SETTINGS") }
-        DrawerMenuItem(icon = Icons.Default.AutoFixHigh, title = "30+ Built-in LUTs") { onNavigate("LUT") }
+        DrawerMenuItem(icon = Icons.Default.Tune, title = "CC Color Grading Mode") { onNavigate("CC_MODE") }
+        DrawerMenuItem(icon = Icons.Default.AutoFixHigh, title = "Fuji Film & 30+ LUTs") { onNavigate("LUT") }
+        DrawerMenuItem(icon = Icons.Default.CropOriginal, title = "Retro Frames & Film Strips") { onNavigate("OVERLAYS") }
         DrawerMenuItem(icon = Icons.Default.Save, title = "Saved Presets DB") { onNavigate("PRESETS") }
-        DrawerMenuItem(icon = Icons.Default.CropOriginal, title = "Retro Frames") { onNavigate("OVERLAYS") }
-        DrawerMenuItem(icon = Icons.Default.Mood, title = "Stickers & Emojis") { onNavigate("OVERLAYS") }
-        DrawerMenuItem(icon = Icons.Default.FontDownload, title = "Typography & Fonts") { onNavigate("OVERLAYS") }
         DrawerMenuItem(icon = Icons.Default.PhotoLibrary, title = "Media Gallery") { onNavigate("GALLERY") }
 
         Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))

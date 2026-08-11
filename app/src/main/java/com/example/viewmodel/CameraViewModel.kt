@@ -41,6 +41,14 @@ data class VinCamUiState(
     val selectedCategory: FilterCategory = FilterCategory.RETRO,
     val exposureEv: Float = 0.0f, // -2.0 to +2.0
     val temperatureOffset: Float = 0.0f, // -50.0 to +50.0
+    // Live CC (Color Correction) Parameters
+    val ccContrast: Float = 0.0f, // -1.0 to +1.0
+    val ccSaturation: Float = 1.0f, // 0.0 to 2.0
+    val ccTint: Float = 0.0f, // -50.0 to +50.0
+    val ccHighlightsTint: Float = 0.0f, // -50.0 to +50.0
+    val ccShadowsTint: Float = 0.0f, // -50.0 to +50.0
+    val ccVignette: Float = 0.0f, // 0.0 to 1.0
+    val ccGrain: Float = 0.0f, // 0.0 to 1.0
     val aspectRatio: String = "16:9",
     val timerSeconds: Int = 0, // 0, 3, 5, 10
     val countdownRemaining: Int = 0,
@@ -59,6 +67,8 @@ data class VinCamUiState(
     val autoSaveToGallery: Boolean = true,
     val currentTheme: VinCamThemeOption = VinCamThemeOption.VINCAM_PASTEL,
     val shutterButtonStyle: String = "CLASSIC_GOLD", // CLASSIC_GOLD, VINTAGE_CHROME, PASTEL_ROSE, LEICA_RED, NEON_CYAN
+    val isShutterSoundEnabled: Boolean = true,
+    val shutterSoundStyle: String = "DSLR_MECHANICAL", // DSLR_MECHANICAL, LEICA_M_CLICK, POLAROID_EJECT, FILM_WINDER, SILENT
     val isAeAfLocked: Boolean = false,
     val galleryItems: List<MediaItem> = emptyList(),
     val lastCapturedUri: Uri? = null,
@@ -127,6 +137,62 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
 
     fun resetTemperature() {
         _uiState.update { it.copy(temperatureOffset = 0.0f) }
+    }
+
+    // CC Color Correction Setters
+    fun setCcContrast(contrast: Float) {
+        _uiState.update { it.copy(ccContrast = contrast.coerceIn(-1.0f, 1.0f)) }
+    }
+
+    fun setCcSaturation(sat: Float) {
+        _uiState.update { it.copy(ccSaturation = sat.coerceIn(0.0f, 2.0f)) }
+    }
+
+    fun setCcTint(tint: Float) {
+        _uiState.update { it.copy(ccTint = tint.coerceIn(-50.0f, 50.0f)) }
+    }
+
+    fun setCcVignette(vignette: Float) {
+        _uiState.update { it.copy(ccVignette = vignette.coerceIn(0.0f, 1.0f)) }
+    }
+
+    fun setCcGrain(grain: Float) {
+        _uiState.update { it.copy(ccGrain = grain.coerceIn(0.0f, 1.0f)) }
+    }
+
+    fun resetCcColorGrading() {
+        _uiState.update {
+            it.copy(
+                ccContrast = 0.0f,
+                ccSaturation = 1.0f,
+                ccTint = 0.0f,
+                ccHighlightsTint = 0.0f,
+                ccShadowsTint = 0.0f,
+                ccVignette = 0.0f,
+                ccGrain = 0.0f,
+                exposureEv = 0.0f,
+                temperatureOffset = 0.0f
+            )
+        }
+    }
+
+    fun toggleShutterSound() {
+        _uiState.update {
+            val nextState = !it.isShutterSoundEnabled
+            it.copy(
+                isShutterSoundEnabled = nextState,
+                toastMessage = if (nextState) "Shutter Sound: ENABLED" else "Shutter Sound: MUTED"
+            )
+        }
+    }
+
+    fun setShutterSoundStyle(style: String) {
+        _uiState.update {
+            it.copy(
+                shutterSoundStyle = style,
+                toastMessage = "Sound: ${style.replace('_', ' ')}"
+            )
+        }
     }
 
     fun setAspectRatio(ratio: String) {
