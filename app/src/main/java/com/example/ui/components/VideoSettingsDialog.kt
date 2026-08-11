@@ -144,6 +144,27 @@ fun VideoSettingsBottomSheet(
                     }
                 }
             }
+            
+            // Codec Selector (H.264, H.265)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("VIDEO CODEC", color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    com.example.model.VideoCodec.entries.forEach { codec ->
+                        val isSel = config.codec == codec
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(38.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (isSel) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.08f))
+                                .clickable { onUpdateVideoConfig { it.copy(codec = codec) } },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(codec.label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
 
             // Bitrate Selector (Auto, Low, Medium, High, Maximum, Custom)
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

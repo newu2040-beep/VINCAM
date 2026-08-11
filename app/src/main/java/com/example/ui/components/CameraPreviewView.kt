@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -95,6 +96,14 @@ fun CameraPreviewContainer(
     val focusRingScale = remember { Animatable(1.5f) }
     val focusRingAlpha = remember { Animatable(1.0f) }
     val coroutineScope = rememberCoroutineScope()
+    
+    val mediaActionSound = remember { android.media.MediaActionSound() }
+    DisposableEffect(Unit) {
+        mediaActionSound.load(android.media.MediaActionSound.SHUTTER_CLICK)
+        mediaActionSound.load(android.media.MediaActionSound.START_VIDEO_RECORDING)
+        mediaActionSound.load(android.media.MediaActionSound.STOP_VIDEO_RECORDING)
+        onDispose { mediaActionSound.release() }
+    }
 
     var previewViewRef by remember { mutableStateOf<PreviewView?>(null) }
 
@@ -172,6 +181,7 @@ fun CameraPreviewContainer(
         val controller = object : CameraCaptureController {
             override fun takePhoto() {
                 val capture = imageCapture ?: return
+                mediaActionSound.play(android.media.MediaActionSound.SHUTTER_CLICK)
                 capture.takePicture(
                     Executors.newSingleThreadExecutor(),
                     object : ImageCapture.OnImageCapturedCallback() {
@@ -214,13 +224,14 @@ fun CameraPreviewContainer(
                 val outputOptions = FileOutputOptions.Builder(videoFile).build()
 
                 try {
-                    val pendingRecording = vCapture.output.prepareRecording(context, outputOptions)
+                    var pendingRecording = vCapture.output.prepareRecording(context, outputOptions)
                     if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO)
                         == android.content.pm.PackageManager.PERMISSION_GRANTED
                     ) {
-                        pendingRecording.withAudioEnabled()
+                        pendingRecording = pendingRecording.withAudioEnabled()
                     }
 
+                    mediaActionSound.play(android.media.MediaActionSound.START_VIDEO_RECORDING)
                     activeRecording = pendingRecording.start(ContextCompat.getMainExecutor(context)) { event ->
                         when (event) {
                             is VideoRecordEvent.Finalize -> {
@@ -247,6 +258,7 @@ fun CameraPreviewContainer(
             }
 
             override fun stopVideoRecording() {
+                mediaActionSound.play(android.media.MediaActionSound.STOP_VIDEO_RECORDING)
                 activeRecording?.stop()
                 activeRecording = null
             }
@@ -266,11 +278,30 @@ fun CameraPreviewContainer(
                 }
             }
     ) {
+        val filterMatrix = remember(uiState.selectedFilter, uiState.filterIntensity, uiState.exposureEv, uiState.temperatureOffset) {
+            val baseMatrix = uiState.selectedFilter.getAdjustedColorMatrix(uiState.filterIntensity)
+            val arr = baseMatrix.values.clone()
+
+            // Apply exposure EV shift
+            val evShift = (uiState.exposureEv * 25f)
+            arr[4] += evShift
+            arr[9] += evShift
+            arr[14] += evShift
+
+            // Apply temperature shift (warm -> R+, B-, cool -> R-, B+)
+            val tempShift = uiState.temperatureOffset * 0.4f
+            arr[4] += tempShift
+            arr[14] -= tempShift
+
+            android.graphics.ColorMatrix(arr)
+        }
+
         // CameraX PreviewView
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
                 PreviewView(ctx).apply {
+                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
@@ -314,7 +345,12 @@ fun CameraPreviewContainer(
                     previewViewRef = this
                 }
             },
-            update = { _ ->
+            update = { previewView ->
+                // Apply color filter to the view layer natively
+                val paint = android.graphics.Paint()
+                paint.colorFilter = android.graphics.ColorMatrixColorFilter(filterMatrix)
+                previewView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, paint)
+                
                 // Update non-destructive controls (Zoom and Torch) safely without calling unbindAll
                 try {
                     val zoomState = camera?.cameraInfo?.zoomState?.value
@@ -333,32 +369,6 @@ fun CameraPreviewContainer(
                 }
             }
         )
-
-        // Live GPU Color Filter Overlay Layer
-        val colorMatrix = remember(uiState.selectedFilter, uiState.filterIntensity, uiState.exposureEv, uiState.temperatureOffset) {
-            val baseMatrix = uiState.selectedFilter.getAdjustedColorMatrix(uiState.filterIntensity)
-            val arr = baseMatrix.values.clone()
-
-            // Apply exposure EV shift
-            val evShift = (uiState.exposureEv * 25f)
-            arr[4] += evShift
-            arr[9] += evShift
-            arr[14] += evShift
-
-            // Apply temperature shift (warm -> R+, B-, cool -> R-, B+)
-            val tempShift = uiState.temperatureOffset * 0.4f
-            arr[4] += tempShift
-            arr[14] -= tempShift
-
-            androidx.compose.ui.graphics.ColorMatrix(arr)
-        }
-
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawRect(
-                color = Color.Transparent,
-                colorFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(colorMatrix)
-            )
-        }
 
         // Tap-to-focus ring indicator
         tapFocusPoint?.let { point ->

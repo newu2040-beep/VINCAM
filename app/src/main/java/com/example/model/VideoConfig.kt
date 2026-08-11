@@ -23,9 +23,15 @@ enum class BitratePreset(val label: String, val defaultMbps: Int) {
     CUSTOM("Custom", 18)
 }
 
+enum class VideoCodec(val label: String) {
+    H264("H.264 (AVC)"),
+    H265("H.265 (HEVC)")
+}
+
 data class VideoConfig(
     val resolution: VideoResolution = VideoResolution.RES_1080P,
     val fps: VideoFps = VideoFps.FPS_30,
+    val codec: VideoCodec = VideoCodec.H264,
     val bitratePreset: BitratePreset = BitratePreset.AUTO,
     val customBitrateMbps: Int = 12,
     val isStabilizationEnabled: Boolean = true,

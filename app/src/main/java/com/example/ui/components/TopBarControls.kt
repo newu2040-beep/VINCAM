@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Highlight
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +50,7 @@ fun TopBarControls(
     onCycleRatio: () -> Unit,
     onSwitchCamera: () -> Unit,
     onOpenSettings: () -> Unit,
+    onToggleTune: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -84,6 +86,24 @@ fun TopBarControls(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
+            // Tune / Exposure settings button
+            IconButton(
+                onClick = onToggleTune,
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(0.5.dp, Color.White.copy(alpha = 0.12f), CircleShape)
+                    .testTag("tune_button")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Tune,
+                    contentDescription = "Tune",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+
             // Flash Mode Button
             IconButton(
                 onClick = onCycleFlash,

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
@@ -77,13 +78,25 @@ fun MainCameraScreen(
 
     var captureController by remember { mutableStateOf<CameraCaptureController?>(null) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    var showExposureSliders by remember { mutableStateOf(false) }
+
+    var activeCountdown by remember { mutableStateOf(0) }
+    var countdownJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
 
     // Permission check using Accompanist
     val permissionsState = rememberMultiplePermissionsState(
-        permissions = listOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO
-        )
+        permissions = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            listOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        } else {
+            listOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
+            )
+        }
     )
 
     // Sync ViewModel Toast with Android Toast or Banner
@@ -153,6 +166,22 @@ fun MainCameraScreen(
                     onSetOpacity = { id, op -> viewModel.setOverlayOpacity(id, op) }
                 )
 
+                // Large Countdown Display
+                AnimatedVisibility(
+                    visible = activeCountdown > 0,
+                    modifier = Modifier.align(Alignment.Center),
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Text(
+                        text = activeCountdown.toString(),
+                        color = Color.White,
+                        fontSize = 120.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.3f), CircleShape).padding(32.dp)
+                    )
+                }
+
                 // Top Bar Controls Overlay
                 TopBarControls(
                     uiState = uiState,
@@ -164,6 +193,7 @@ fun MainCameraScreen(
                     onCycleRatio = { viewModel.setAspectRatio(if (uiState.aspectRatio == "16:9") "4:3" else if (uiState.aspectRatio == "4:3") "1:1" else "16:9") },
                     onSwitchCamera = { viewModel.toggleCameraLens() },
                     onOpenSettings = { viewModel.openDialogOrSheet("VIDEO_CONFIG") },
+                    onToggleTune = { showExposureSliders = !showExposureSliders },
                     modifier = Modifier.align(Alignment.TopCenter)
                 )
 
@@ -183,13 +213,16 @@ fun MainCameraScreen(
                     }
 
                     // Exposure & Temperature Sliders
-                    ExposureTempOverlaySliders(
-                        uiState = uiState,
-                        onExposureChanged = { ev -> viewModel.setExposureEv(ev) },
-                        onResetExposure = { viewModel.resetExposure() },
-                        onTemperatureChanged = { temp -> viewModel.setTemperatureOffset(temp) },
-                        onResetTemperature = { viewModel.resetTemperature() }
-                    )
+                    AnimatedVisibility(visible = showExposureSliders) {
+                        ExposureTempOverlaySliders(
+                            uiState = uiState,
+                            onExposureChanged = { ev -> viewModel.setExposureEv(ev) },
+                            onResetExposure = { viewModel.resetExposure() },
+                            onTemperatureChanged = { temp -> viewModel.setTemperatureOffset(temp) },
+                            onResetTemperature = { viewModel.resetTemperature() },
+                            onClose = { showExposureSliders = false }
+                        )
+                    }
 
                     // Zoom Lens Selector (0.5x, 1x, 2x, 3x, 5x)
                     ZoomLensBar(
@@ -202,19 +235,41 @@ fun MainCameraScreen(
                         uiState = uiState,
                         onModeSelected = { mode -> viewModel.setCameraMode(mode) },
                         onShutterClicked = {
-                            when (uiState.currentMode) {
-                                CameraMode.PHOTO, CameraMode.PRO -> {
-                                    captureController?.takePhoto()
-                                }
-                                CameraMode.VIDEO -> {
-                                    if (uiState.isRecording) {
-                                        captureController?.stopVideoRecording()
-                                        viewModel.stopRecordingTimer()
-                                    } else {
-                                        captureController?.startVideoRecording()
-                                        viewModel.startRecordingTimer()
+                            if (countdownJob?.isActive == true) {
+                                countdownJob?.cancel()
+                                countdownJob = null
+                                activeCountdown = 0
+                                return@BottomBarControls
+                            }
+                            
+                            val performCapture = {
+                                when (uiState.currentMode) {
+                                    CameraMode.PHOTO, CameraMode.PRO -> {
+                                        captureController?.takePhoto()
+                                    }
+                                    CameraMode.VIDEO -> {
+                                        if (uiState.isRecording) {
+                                            captureController?.stopVideoRecording()
+                                            viewModel.stopRecordingTimer()
+                                        } else {
+                                            captureController?.startVideoRecording()
+                                            viewModel.startRecordingTimer()
+                                        }
                                     }
                                 }
+                            }
+
+                            if (uiState.timerSeconds > 0 && !uiState.isRecording) {
+                                countdownJob = coroutineScope.launch {
+                                    for (i in uiState.timerSeconds downTo 1) {
+                                        activeCountdown = i
+                                        kotlinx.coroutines.delay(1000)
+                                    }
+                                    activeCountdown = 0
+                                    performCapture()
+                                }
+                            } else {
+                                performCapture()
                             }
                         },
                         onPauseResumeVideo = {
