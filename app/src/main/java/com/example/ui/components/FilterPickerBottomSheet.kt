@@ -2,7 +2,6 @@ package com.example.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
@@ -57,14 +57,14 @@ fun FilterPickerBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color(0xFF0D0D0D),
-        scrimColor = Color.Black.copy(alpha = 0.7f)
+        containerColor = MaterialTheme.colorScheme.background,
+        scrimColor = Color.Black.copy(alpha = 0.2f)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(bottom = 32.dp, start = 24.dp, end = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Header Row
             Row(
@@ -74,16 +74,25 @@ fun FilterPickerBottomSheet(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.AutoFixHigh,
-                        contentDescription = "LUT Filters",
-                        tint = Color(0xFFFF6321)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoFixHigh,
+                            contentDescription = "LUT Filters",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                     Text(
                         text = "LUT PRESETS (30+)",
-                        color = Color(0xFFF5F2ED),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 1.sp
@@ -93,15 +102,15 @@ fun FilterPickerBottomSheet(
                 IconButton(
                     onClick = onDismiss,
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(36.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = Color(0xFFF5F2ED),
-                        modifier = Modifier.size(18.dp)
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -109,30 +118,26 @@ fun FilterPickerBottomSheet(
             // Category Tab Selector
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 FilterCategory.entries.forEach { category ->
                     val isSelected = uiState.selectedCategory == category
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(36.dp)
+                            .height(40.dp)
+                            .shadow(elevation = if (isSelected) 8.dp else 0.dp, shape = RoundedCornerShape(12.dp), spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                if (isSelected) Color(0xFFFF6321) else Color(0xFF1A1A1A)
-                            )
-                            .border(
-                                width = if (isSelected) 0.dp else 0.5.dp,
-                                color = Color.White.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(12.dp)
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
                             )
                             .clickable { onCategorySelected(category) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = category.label,
-                            color = if (isSelected) Color.Black else Color(0xFFF5F2ED).copy(alpha = 0.7f),
-                            fontSize = 11.sp,
+                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                         )
                     }
@@ -145,7 +150,7 @@ fun FilterPickerBottomSheet(
             }
 
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("filter_presets_row")
@@ -154,38 +159,42 @@ fun FilterPickerBottomSheet(
                     val isSelected = uiState.selectedFilter.id == preset.id
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier
-                            .width(84.dp)
+                            .width(88.dp)
                             .clickable { onFilterSelected(preset) }
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(76.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Color(0xFF1A1A1A))
-                                .border(
-                                    width = if (isSelected) 2.5.dp else 0.5.dp,
-                                    color = if (isSelected) Color(0xFFFF6321) else Color.White.copy(alpha = 0.12f),
-                                    shape = RoundedCornerShape(16.dp)
-                                ),
+                                .size(88.dp)
+                                .shadow(elevation = if (isSelected) 12.dp else 4.dp, shape = RoundedCornerShape(20.dp), spotColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.05f))
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface),
                             contentAlignment = Alignment.Center
                         ) {
-                            // Filter Visual Color Preview
-                            Canvas(modifier = Modifier.size(60.dp)) {
-                                val matrix = preset.getAdjustedColorMatrix(1.0f)
-                                drawCircle(
-                                    color = Color(0xFFD4A373),
-                                    colorFilter = ColorFilter.colorMatrix(matrix)
-                                )
+                            Box(
+                                modifier = Modifier
+                                    .size(80.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(MaterialTheme.colorScheme.surface),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                // Filter Visual Color Preview
+                                Canvas(modifier = Modifier.size(64.dp)) {
+                                    val matrix = preset.getAdjustedColorMatrix(1.0f)
+                                    drawCircle(
+                                        color = Color(0xFFD4A373),
+                                        colorFilter = ColorFilter.colorMatrix(matrix)
+                                    )
+                                }
                             }
                         }
 
                         Text(
                             text = preset.name,
-                            color = if (isSelected) Color(0xFFFF6321) else Color(0xFFF5F2ED).copy(alpha = 0.85f),
-                            fontSize = 11.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                            fontSize = 12.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             maxLines = 1
                         )
                     }
@@ -196,16 +205,16 @@ fun FilterPickerBottomSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFF1A1A1A))
-                    .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
-                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.05f))
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
                     text = "INTENSITY",
-                    color = Color(0xFFF5F2ED).copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -217,19 +226,20 @@ fun FilterPickerBottomSheet(
                     valueRange = 0.0f..1.0f,
                     modifier = Modifier.weight(1f),
                     colors = SliderDefaults.colors(
-                        thumbColor = Color(0xFFFF6321),
-                        activeTrackColor = Color(0xFFFF6321),
-                        inactiveTrackColor = Color.White.copy(alpha = 0.15f)
+                        thumbColor = MaterialTheme.colorScheme.surface,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
                 )
 
                 Text(
                     text = "${(uiState.filterIntensity * 100).toInt()}%",
-                    color = Color(0xFFFF6321),
-                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
             }
         }
     }
 }
+

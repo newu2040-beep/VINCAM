@@ -2,7 +2,6 @@ package com.example.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -53,16 +53,16 @@ fun ZoomLensBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.05f))
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF1A1A1A))
-                    .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
                     text = "0.5x",
-                    color = Color(0xFFF5F2ED).copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -73,9 +73,9 @@ fun ZoomLensBar(
                     valueRange = 0.5f..5.0f,
                     modifier = Modifier.weight(1f),
                     colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
+                        thumbColor = MaterialTheme.colorScheme.surface,
                         activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = Color.White.copy(alpha = 0.15f)
+                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
                 )
                 Text(
@@ -91,19 +91,19 @@ fun ZoomLensBar(
         // Quick Lens Buttons (0.5x, 1x, 2x, 3x, 5x)
         Row(
             modifier = Modifier
+                .shadow(elevation = 8.dp, shape = RoundedCornerShape(22.dp), spotColor = Color.Black.copy(alpha = 0.05f))
                 .clip(RoundedCornerShape(22.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(22.dp))
-                .padding(horizontal = 4.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                .padding(horizontal = 6.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             lensOptions.forEach { zoom ->
                 val isSelected = Math.abs(uiState.zoomRatio - zoom) < 0.2f
                 Box(
                     modifier = Modifier
-                        .height(30.dp)
-                        .clip(RoundedCornerShape(15.dp))
+                        .height(32.dp)
+                        .clip(RoundedCornerShape(16.dp))
                         .background(
                             if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
                         )
@@ -114,14 +114,14 @@ fun ZoomLensBar(
                                 onZoomSelected(zoom)
                             }
                         }
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 14.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = if (zoom == 1.0f) "1x" else if (zoom == 0.5f) "0.5x" else "${zoom.toInt()}x",
-                        color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
                         fontSize = 12.sp,
-                        fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+                        fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     )
                 }
@@ -129,4 +129,5 @@ fun ZoomLensBar(
         }
     }
 }
+
 

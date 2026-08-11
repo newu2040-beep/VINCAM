@@ -133,7 +133,7 @@ fun MainCameraScreen(
         }
     ) {
         Scaffold(
-            containerColor = Color.Black
+            containerColor = MaterialTheme.colorScheme.background
         ) { innerPadding ->
             Box(
                 modifier = Modifier

@@ -10,7 +10,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,11 +24,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -45,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.model.CameraMode
-import com.example.ui.theme.VinCamRedRecord
+import com.example.ui.theme.VincamRedRecord
 import com.example.viewmodel.VinCamUiState
 
 @Composable
@@ -72,34 +70,34 @@ fun BottomBarControls(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 24.dp, top = 8.dp),
+            .padding(bottom = 32.dp, top = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(18.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Mode Selector (VIDEO | PHOTO | PRO) with Geometric Balance dot indicator
+        // Mode Selector (VIDEO | PHOTO | PRO)
         Row(
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalArrangement = Arrangement.spacedBy(32.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CameraMode.entries.forEach { mode ->
                 val isSelected = uiState.currentMode == mode
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier
                         .clickable { onModeSelected(mode) }
-                        .padding(horizontal = 6.dp, vertical = 4.dp)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = mode.title,
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 2.sp
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.5.sp
                     )
                     Box(
                         modifier = Modifier
-                            .size(5.dp)
+                            .size(6.dp)
                             .clip(CircleShape)
                             .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
                     )
@@ -113,16 +111,16 @@ fun BottomBarControls(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF1A1A1A))
-                    .border(0.5.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.05f))
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Box(
                     modifier = Modifier
                         .size(10.dp)
                         .clip(CircleShape)
-                        .background(VinCamRedRecord.copy(alpha = if (uiState.isRecordingPaused) 0.4f else pulseAlpha))
+                        .background(VincamRedRecord.copy(alpha = if (uiState.isRecordingPaused) 0.4f else pulseAlpha))
                 )
                 val totalSec = uiState.recordingDurationSeconds
                 val mins = totalSec / 60
@@ -130,8 +128,8 @@ fun BottomBarControls(
                 val formattedTime = String.format("%02d:%02d", mins, secs)
                 Text(
                     text = formattedTime,
-                    color = Color(0xFFF5F2ED),
-                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
                 )
@@ -142,7 +140,7 @@ fun BottomBarControls(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 28.dp),
+                .padding(horizontal = 32.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -150,9 +148,9 @@ fun BottomBarControls(
             Box(
                 modifier = Modifier
                     .size(56.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(Color(0xFF1A1A1A))
-                    .border(0.5.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(18.dp))
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.05f))
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surface)
                     .clickable { onOpenGallery() }
                     .testTag("gallery_button"),
                 contentAlignment = Alignment.Center
@@ -163,7 +161,7 @@ fun BottomBarControls(
                         contentDescription = "Gallery Thumbnail",
                         modifier = Modifier
                             .size(56.dp)
-                            .clip(RoundedCornerShape(18.dp)),
+                            .clip(RoundedCornerShape(16.dp)),
                         contentScale = ContentScale.Crop
                     )
                 } else {
@@ -171,51 +169,45 @@ fun BottomBarControls(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
-                            .background(Color(0xFF2A2420)),
+                            .background(MaterialTheme.colorScheme.surface),
                         contentAlignment = Alignment.Center
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape)
+                                .size(24.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                         )
                     }
                 }
             }
 
-            // LARGE GEOMETRIC SHUTTER BUTTON
+            // LARGE VINCAM SHUTTER BUTTON
             Box(
                 modifier = Modifier
-                    .size(86.dp)
+                    .size(96.dp)
+                    .shadow(elevation = 12.dp, shape = CircleShape, spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                     .clip(CircleShape)
-                    .background(Color.Transparent)
-                    .border(4.dp, Color.White.copy(alpha = 0.08f), CircleShape)
-                    .padding(5.dp)
-                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface)
                     .clickable { onShutterClicked() }
                     .testTag("main_shutter_button"),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
-                        .size(72.dp)
+                        .size(68.dp)
                         .clip(CircleShape)
                         .background(
                             if (uiState.currentMode == CameraMode.VIDEO && uiState.isRecording)
-                                VinCamRedRecord
+                                VincamRedRecord
                             else
-                                Color(0xFFF5F2ED)
-                        )
-                        .border(2.dp, Color.Black.copy(alpha = 0.1f), CircleShape),
+                                MaterialTheme.colorScheme.primary
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     if (uiState.currentMode == CameraMode.VIDEO && uiState.isRecording) {
-                        Icon(
-                            imageVector = Icons.Default.Stop,
-                            contentDescription = "Stop Recording",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
+                        Box(
+                            modifier = Modifier.size(24.dp).clip(RoundedCornerShape(4.dp)).background(Color.White)
                         )
                     }
                 }
@@ -226,16 +218,16 @@ fun BottomBarControls(
                 Box(
                     modifier = Modifier
                         .size(56.dp)
+                        .shadow(elevation = 8.dp, shape = CircleShape, spotColor = Color.Black.copy(alpha = 0.05f))
                         .clip(CircleShape)
-                        .background(Color(0xFF1A1A1A))
-                        .border(0.5.dp, Color.White.copy(alpha = 0.15f), CircleShape)
+                        .background(MaterialTheme.colorScheme.surface)
                         .clickable { onPauseResumeVideo() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (uiState.isRecordingPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
                         contentDescription = "Pause/Resume Recording",
-                        tint = Color(0xFFF5F2ED),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -243,9 +235,9 @@ fun BottomBarControls(
                 Box(
                     modifier = Modifier
                         .size(56.dp)
+                        .shadow(elevation = 8.dp, shape = CircleShape, spotColor = Color.Black.copy(alpha = 0.05f))
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surface)
-                        .border(0.5.dp, Color.White.copy(alpha = 0.15f), CircleShape)
                         .clickable { onOpenLut() },
                     contentAlignment = Alignment.Center
                 ) {
@@ -253,11 +245,12 @@ fun BottomBarControls(
                         imageVector = Icons.Default.AutoFixHigh,
                         contentDescription = "LUT Filters",
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(26.dp)
                     )
                 }
             }
         }
     }
 }
+
 

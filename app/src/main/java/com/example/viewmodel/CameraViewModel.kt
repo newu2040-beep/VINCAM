@@ -57,7 +57,7 @@ data class VinCamUiState(
     val isRecordingPaused: Boolean = false,
     val recordingDurationSeconds: Long = 0L,
     val autoSaveToGallery: Boolean = true,
-    val currentTheme: VinCamThemeOption = VinCamThemeOption.GEOMETRIC_BALANCE,
+    val currentTheme: VinCamThemeOption = VinCamThemeOption.VINCAM_PASTEL,
     val galleryItems: List<MediaItem> = emptyList(),
     val lastCapturedUri: Uri? = null,
     val pendingSaveItem: MediaItem? = null,

@@ -115,7 +115,7 @@ fun CameraPreviewContainer(
         }, ContextCompat.getMainExecutor(context))
     }
 
-    LaunchedEffect(cameraProvider, uiState.isFrontCamera, uiState.videoConfig.resolution, previewViewRef) {
+    LaunchedEffect(cameraProvider, uiState.isFrontCamera, uiState.videoConfig.resolution, uiState.currentMode, previewViewRef) {
         val provider = cameraProvider ?: return@LaunchedEffect
         val pView = previewViewRef ?: return@LaunchedEffect
 
@@ -133,7 +133,7 @@ fun CameraPreviewContainer(
         }
 
         val imgCapture = ImageCapture.Builder()
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
             .setFlashMode(
                 when (uiState.flashMode) {
                     1 -> ImageCapture.FLASH_MODE_AUTO

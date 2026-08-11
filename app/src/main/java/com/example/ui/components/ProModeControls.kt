@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -65,7 +66,7 @@ fun ProModeControlsOverlay(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // Top Tools Bar: Histogram, Focus Peaking, Zebra, RAW
         Row(
@@ -78,9 +79,9 @@ fun ProModeControlsOverlay(
                 Box(
                     modifier = Modifier
                         .size(100.dp, 44.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.Black.copy(alpha = 0.75f))
-                        .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(12.dp), spotColor = Color.Black.copy(alpha = 0.05f))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surface)
                         .padding(4.dp)
                 ) {
                     Canvas(modifier = Modifier.fillMaxWidth().height(36.dp)) {
@@ -98,9 +99,10 @@ fun ProModeControlsOverlay(
             // Quick Pro Overlay Toggles (Histogram, Peaking, RAW, Zebra)
             Row(
                 modifier = Modifier
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.05f))
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color.Black.copy(alpha = 0.65f))
-                    .padding(horizontal = 6.dp, vertical = 4.dp),
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 6.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 ProChipToggle(
@@ -131,27 +133,27 @@ fun ProModeControlsOverlay(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.Black.copy(alpha = 0.80f))
-                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-                    .padding(12.dp)
+                    .shadow(elevation = 16.dp, shape = RoundedCornerShape(20.dp), spotColor = Color.Black.copy(alpha = 0.1f))
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(16.dp)
             ) {
                 when (activeProTab) {
                     "ISO" -> {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text("MANUAL ISO", color = Color.White.copy(alpha = 0.6f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("MANUAL ISO", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             val isoValues = listOf("AUTO", "100", "200", "400", "800", "1600", "3200", "6400")
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 items(isoValues) { iso ->
                                     val isSel = pro.iso == iso
                                     Box(
                                         modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(if (isSel) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.1f))
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                                             .clickable { onUpdateProSettings { it.copy(iso = iso) } }
-                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                            .padding(horizontal = 14.dp, vertical = 8.dp)
                                     ) {
-                                        Text(iso, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Text(iso, color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -159,20 +161,20 @@ fun ProModeControlsOverlay(
                     }
 
                     "SHUTTER" -> {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text("SHUTTER SPEED", color = Color.White.copy(alpha = 0.6f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("SHUTTER SPEED", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             val shutterValues = listOf("AUTO", "1/1000s", "1/500s", "1/250s", "1/125s", "1/60s", "1/30s", "1s")
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 items(shutterValues) { shutter ->
                                     val isSel = pro.shutterSpeed == shutter
                                     Box(
                                         modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(if (isSel) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.1f))
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                                             .clickable { onUpdateProSettings { it.copy(shutterSpeed = shutter) } }
-                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                            .padding(horizontal = 14.dp, vertical = 8.dp)
                                     ) {
-                                        Text(shutter, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Text(shutter, color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -180,42 +182,50 @@ fun ProModeControlsOverlay(
                     }
 
                     "FOCUS" -> {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("MANUAL FOCUS DISTANCE", color = Color.White.copy(alpha = 0.6f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                Text(if (pro.focusDistance > 0.8f) "INFINITY" else if (pro.focusDistance < 0.2f) "MACRO" else "%.2f".format(pro.focusDistance), color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text("MANUAL FOCUS DISTANCE", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(if (pro.focusDistance > 0.8f) "INFINITY" else if (pro.focusDistance < 0.2f) "MACRO" else "%.2f".format(pro.focusDistance), color = MaterialTheme.colorScheme.primary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Macro", color = Color.White.copy(alpha = 0.5f), fontSize = 10.sp)
+                                Text("Macro", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 11.sp)
                                 Slider(
                                     value = pro.focusDistance,
                                     onValueChange = { dist -> onUpdateProSettings { it.copy(focusDistance = dist, focusMode = "MF") } },
                                     valueRange = 0.0f..1.0f,
-                                    modifier = Modifier.weight(1f),
-                                    colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary)
+                                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.surface,
+                                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                                    )
                                 )
-                                Text("Infinity", color = Color.White.copy(alpha = 0.5f), fontSize = 10.sp)
+                                Text("Infinity", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 11.sp)
                             }
                         }
                     }
 
                     "WB" -> {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("WHITE BALANCE KELVIN", color = Color.White.copy(alpha = 0.6f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                Text("${pro.wbTemperatureK}K", color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text("WHITE BALANCE KELVIN", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("${pro.wbTemperatureK}K", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             Slider(
                                 value = pro.wbTemperatureK.toFloat(),
                                 onValueChange = { k -> onUpdateProSettings { it.copy(wbTemperatureK = k.toInt()) } },
                                 valueRange = 2500f..7500f,
-                                colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.secondary)
+                                colors = SliderDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.surface,
+                                    activeTrackColor = MaterialTheme.colorScheme.secondary,
+                                    inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                                )
                             )
                         }
                     }
@@ -227,9 +237,10 @@ fun ProModeControlsOverlay(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(18.dp))
-                .background(Color.Black.copy(alpha = 0.75f))
-                .padding(horizontal = 8.dp, vertical = 6.dp),
+                .shadow(elevation = 12.dp, shape = RoundedCornerShape(20.dp), spotColor = Color.Black.copy(alpha = 0.05f))
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(horizontal = 8.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -253,16 +264,16 @@ fun ProModeControlsOverlay(
 fun ProChipToggle(label: String, isActive: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (isActive) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.1f))
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
             .clickable { onClick() }
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = label,
-            color = if (isActive) Color.White else Color.White.copy(alpha = 0.6f),
-            fontSize = 10.sp,
+            color = if (isActive) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -273,12 +284,13 @@ fun ProTabButton(label: String, valText: String, isSelected: Boolean, onClick: (
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.25f) else Color.Transparent)
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent)
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
-        Text(label, color = Color.White.copy(alpha = 0.5f), fontSize = 9.sp, fontWeight = FontWeight.Bold)
-        Text(valText, color = if (isSelected) MaterialTheme.colorScheme.primary else Color.White, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+        Text(label, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        Text(valText, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
+

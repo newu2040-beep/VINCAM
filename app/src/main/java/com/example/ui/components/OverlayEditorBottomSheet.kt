@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -71,14 +72,14 @@ fun OverlayEditorBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color(0xFF1E1B18),
-        scrimColor = Color.Black.copy(alpha = 0.6f)
+        containerColor = MaterialTheme.colorScheme.background,
+        scrimColor = Color.Black.copy(alpha = 0.2f)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(bottom = 32.dp, start = 24.dp, end = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Header
             Row(
@@ -88,7 +89,7 @@ fun OverlayEditorBottomSheet(
             ) {
                 Text(
                     text = "LIVE OVERLAYS & GRAPHICS",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp
@@ -97,15 +98,15 @@ fun OverlayEditorBottomSheet(
                 IconButton(
                     onClick = onDismiss,
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(36.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -113,7 +114,7 @@ fun OverlayEditorBottomSheet(
             // Tab Selector: TEXT | STICKERS | FRAMES
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 listOf(
                     "STICKERS" to Icons.Default.Mood,
@@ -124,10 +125,11 @@ fun OverlayEditorBottomSheet(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(40.dp)
+                            .height(44.dp)
+                            .shadow(elevation = if (isSelected) 8.dp else 0.dp, shape = RoundedCornerShape(12.dp), spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                if (isSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.08f)
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
                             )
                             .clickable { selectedTab = tabName },
                         contentAlignment = Alignment.Center
@@ -139,12 +141,12 @@ fun OverlayEditorBottomSheet(
                             Icon(
                                 imageVector = icon,
                                 contentDescription = tabName,
-                                tint = if (isSelected) Color.White else Color.White.copy(alpha = 0.6f),
+                                tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
                                 text = tabName,
-                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.7f),
+                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                 fontSize = 11.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                             )
@@ -155,32 +157,35 @@ fun OverlayEditorBottomSheet(
 
             when (selectedTab) {
                 "TEXT" -> {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         OutlinedTextField(
                             value = textInput,
                             onValueChange = { textInput = it },
-                            placeholder = { Text("Enter text (English, Nepali, Hindi, Unicode)", color = Color.White.copy(alpha = 0.4f)) },
+                            placeholder = { Text("Enter text (English, Nepali, Hindi, Unicode)", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = Color.White.copy(alpha = 0.2f)
-                            )
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            shape = RoundedCornerShape(16.dp)
                         )
 
-                        Text("Select Font Style", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("Select Font Style", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(DefaultOverlayLibrary.FONTS) { font ->
                                 val isSel = selectedFont == font
                                 Box(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(if (isSel) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.1f))
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
                                         .clickable { selectedFont = font }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                        .padding(horizontal = 14.dp, vertical = 8.dp)
                                 ) {
-                                    Text(font, color = Color.White, fontSize = 12.sp)
+                                    Text(font, color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -195,8 +200,9 @@ fun OverlayEditorBottomSheet(
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(46.dp),
-                            shape = RoundedCornerShape(12.dp),
+                                .height(52.dp)
+                                .shadow(8.dp, RoundedCornerShape(16.dp), spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
+                            shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
@@ -206,16 +212,17 @@ fun OverlayEditorBottomSheet(
                 }
 
                 "STICKERS" -> {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         DefaultOverlayLibrary.EMOJI_GROUPS.forEach { group ->
-                            Text(group.categoryName, color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(group.categoryName, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 items(group.items) { sticker ->
                                     Box(
                                         modifier = Modifier
-                                            .size(52.dp)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(Color.White.copy(alpha = 0.08f))
+                                            .size(56.dp)
+                                            .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.05f))
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(MaterialTheme.colorScheme.surface)
                                             .clickable {
                                                 onAddSticker(sticker)
                                                 onDismiss()
@@ -223,7 +230,7 @@ fun OverlayEditorBottomSheet(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         if (sticker.length <= 4) {
-                                            Text(sticker, fontSize = 24.sp)
+                                            Text(sticker, fontSize = 28.sp)
                                         } else {
                                             Text(sticker, color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                         }
@@ -237,24 +244,24 @@ fun OverlayEditorBottomSheet(
                 "FRAMES" -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.height(200.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.height(240.dp)
                     ) {
                         items(DefaultOverlayLibrary.FRAME_PRESETS) { frameName ->
                             Box(
                                 modifier = Modifier
-                                    .height(48.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color.White.copy(alpha = 0.08f))
-                                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                    .height(56.dp)
+                                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(14.dp), spotColor = Color.Black.copy(alpha = 0.05f))
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(MaterialTheme.colorScheme.surface)
                                     .clickable {
                                         onSelectFrame(frameName)
                                         onDismiss()
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(frameName, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(frameName, color = MaterialTheme.colorScheme.primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -263,3 +270,4 @@ fun OverlayEditorBottomSheet(
         }
     }
 }
+

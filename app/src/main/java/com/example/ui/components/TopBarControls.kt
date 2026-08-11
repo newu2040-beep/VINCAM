@@ -2,12 +2,13 @@ package com.example.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,15 +25,14 @@ import androidx.compose.material.icons.filled.Highlight
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -50,196 +50,139 @@ fun TopBarControls(
     onCycleRatio: () -> Unit,
     onSwitchCamera: () -> Unit,
     onOpenSettings: () -> Unit,
-    onToggleTune: () -> Unit,
+    onToggleTune: () -> Unit, // tune is handled below or somewhere else now, or we can add it
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 8.dp, vertical = 16.dp)
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.Top
     ) {
-        // Far Left: Settings Icon Button (Replaces old VINCAM text)
-        IconButton(
+        // Settings
+        TopBarItem(
+            icon = { Icon(Icons.Default.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.onSurface) },
+            label = "SETTINGS",
             onClick = onOpenSettings,
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface)
-                .border(0.5.dp, Color.White.copy(alpha = 0.15f), CircleShape)
-                .testTag("top_settings_button")
-        ) {
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Camera Settings",
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(18.dp)
-            )
+            isAccent = false
+        )
+
+        // Flash
+        val flashIcon = when (uiState.flashMode) {
+            1 -> Icons.Default.FlashAuto
+            2 -> Icons.Default.FlashOn
+            3 -> Icons.Default.Highlight
+            else -> Icons.Default.FlashOff
         }
+        val flashTint = if (uiState.flashMode > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+        TopBarItem(
+            icon = { Icon(flashIcon, contentDescription = "Flash", tint = flashTint) },
+            label = "FLASH",
+            onClick = onCycleFlash,
+            isAccent = false
+        )
 
-        // Apple-style Dark Glass Controls Bar
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            // Tune / Exposure settings button
-            IconButton(
-                onClick = onToggleTune,
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(0.5.dp, Color.White.copy(alpha = 0.12f), CircleShape)
-                    .testTag("tune_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Tune,
-                    contentDescription = "Tune",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
+        // Timer
+        val timerTint = if (uiState.timerSeconds > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+        TopBarItem(
+            icon = { Icon(Icons.Default.Timer, contentDescription = "Timer", tint = timerTint) },
+            label = "TIMER",
+            onClick = onCycleTimer,
+            isAccent = false
+        )
 
-            // Flash Mode Button
-            IconButton(
-                onClick = onCycleFlash,
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(0.5.dp, Color.White.copy(alpha = 0.12f), CircleShape)
-                    .testTag("flash_toggle_button")
-            ) {
-                val flashIcon = when (uiState.flashMode) {
-                    1 -> Icons.Default.FlashAuto
-                    2 -> Icons.Default.FlashOn
-                    3 -> Icons.Default.Highlight
-                    else -> Icons.Default.FlashOff
-                }
-                val flashTint = if (uiState.flashMode > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                Icon(
-                    imageVector = flashIcon,
-                    contentDescription = "Flash Mode",
-                    tint = flashTint,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            // Timer Button
-            Box(
-                modifier = Modifier
-                    .height(36.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
-                    .clickable { onCycleTimer() }
-                    .padding(horizontal = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Timer,
-                        contentDescription = "Timer",
-                        tint = if (uiState.timerSeconds > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                        modifier = Modifier.size(15.dp)
-                    )
-                    if (uiState.timerSeconds > 0) {
-                        Text(
-                            text = "${uiState.timerSeconds}s",
-                            color = MaterialTheme.colorScheme.primary,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-
-            // Aspect Ratio Button
-            Box(
-                modifier = Modifier
-                    .height(36.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
-                    .clickable { onCycleRatio() }
-                    .padding(horizontal = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
+        // Aspect Ratio
+        TopBarItem(
+            icon = { 
                 Text(
                     text = uiState.aspectRatio,
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
-                )
-            }
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                ) 
+            },
+            label = "ASPECT RATIO",
+            onClick = onCycleRatio,
+            isAccent = false,
+            isPill = true
+        )
 
-            // Quality Badge (4K / 1080P or RAW)
-            Box(
-                modifier = Modifier
-                    .height(36.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                    .border(0.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(18.dp))
-                    .clickable { onOpenSettings() }
-                    .padding(horizontal = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
+        // Quality/Resolution
+        val qualityText = if (uiState.currentMode == CameraMode.VIDEO) {
+            "${uiState.videoConfig.resolution.label} • ${uiState.videoConfig.fps.fpsValue}FPS"
+        } else "100% RAW"
+        TopBarItem(
+            icon = { 
                 Text(
-                    text = if (uiState.currentMode == CameraMode.VIDEO) {
-                        "${uiState.videoConfig.resolution.label} ${uiState.videoConfig.fps.fpsValue}FPS"
-                    } else "100% RAW",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 0.5.sp
-                )
-            }
+                    text = qualityText,
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                ) 
+            },
+            label = "RESOLUTION",
+            onClick = onOpenSettings,
+            isAccent = true,
+            isPill = true
+        )
 
-            // Camera Flip Switch Button
-            IconButton(
-                onClick = onSwitchCamera,
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(0.5.dp, Color.White.copy(alpha = 0.12f), CircleShape)
-                    .testTag("switch_camera_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Cameraswitch,
-                    contentDescription = "Switch Camera Lens",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
+        // Flip Camera
+        TopBarItem(
+            icon = { Icon(Icons.Default.Cameraswitch, contentDescription = "Flip", tint = MaterialTheme.colorScheme.onSurface) },
+            label = "FLIP",
+            onClick = onSwitchCamera,
+            isAccent = false
+        )
 
-        // Far Right: Hamburger Menu Button
-        IconButton(
+        // Menu
+        TopBarItem(
+            icon = { Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onSurface) },
+            label = "MENU",
             onClick = onOpenMenu,
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface)
-                .border(0.5.dp, Color.White.copy(alpha = 0.15f), CircleShape)
-                .testTag("hamburger_menu_button")
-        ) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Open Menu",
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+            isAccent = false
+        )
     }
 }
+
+@Composable
+fun TopBarItem(
+    icon: @Composable () -> Unit,
+    label: String,
+    onClick: () -> Unit,
+    isAccent: Boolean,
+    isPill: Boolean = false
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        val shape = if (isPill) RoundedCornerShape(20.dp) else CircleShape
+        val bgColor = if (isAccent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+        
+        Box(
+            modifier = Modifier
+                .height(40.dp)
+                .then(if (isPill) Modifier.padding(horizontal = 2.dp) else Modifier.size(40.dp))
+                .shadow(elevation = 4.dp, shape = shape, spotColor = Color.Black.copy(alpha = 0.05f))
+                .clip(shape)
+                .background(bgColor)
+                .clickable(onClick = onClick)
+                .padding(horizontal = if (isPill) 16.dp else 0.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            icon()
+        }
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp
+        )
+    }
+}
+
 
 
