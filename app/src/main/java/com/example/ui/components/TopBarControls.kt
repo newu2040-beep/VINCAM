@@ -79,11 +79,10 @@ fun TopBarControls(
         // Apple-style Dark Glass Controls Bar
         Row(
             modifier = Modifier
-                .weight(1f, fill = false)
-                .padding(horizontal = 4.dp)
-                .horizontalScroll(rememberScrollState()),
+                .weight(1f)
+                .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             // Flash Mode Button
             IconButton(

@@ -109,7 +109,7 @@ fun HamburgerDrawerContent(
                     letterSpacing = 2.sp
                 )
                 Text(
-                    text = "RETRO STUDIO • V5.6",
+                    text = "RETRO STUDIO • V6.1",
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,

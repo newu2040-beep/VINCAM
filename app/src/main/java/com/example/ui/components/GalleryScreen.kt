@@ -136,6 +136,10 @@ fun GalleryBottomSheet(
                             AndroidView(
                                 factory = { ctx ->
                                     VideoView(ctx).apply {
+                                        layoutParams = android.view.ViewGroup.LayoutParams(
+                                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                            android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                                        )
                                         val controller = MediaController(ctx)
                                         controller.setAnchorView(this)
                                         setMediaController(controller)

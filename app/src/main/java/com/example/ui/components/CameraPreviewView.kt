@@ -12,6 +12,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
@@ -141,9 +142,9 @@ fun CameraPreviewContainer(
             VideoResolution.RES_720P -> Quality.HD
         }
 
-        val qualitySelector = QualitySelector.from(
-            preferredQuality,
-            FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
+        val qualitySelector = QualitySelector.fromOrderedList(
+            listOf(preferredQuality, Quality.FHD, Quality.HD, Quality.SD, Quality.LOWEST),
+            FallbackStrategy.lowerQualityOrHigherThan(Quality.LOWEST)
         )
 
         val recorder = Recorder.Builder()
@@ -154,21 +155,15 @@ fun CameraPreviewContainer(
 
         try {
             provider.unbindAll()
-            val boundCamera = provider.bindToLifecycle(lifecycleOwner, selector, preview, imgCapture, vidCapture)
+            val boundCamera = if (uiState.currentMode == CameraMode.VIDEO) {
+                provider.bindToLifecycle(lifecycleOwner, selector, preview, vidCapture)
+            } else {
+                provider.bindToLifecycle(lifecycleOwner, selector, preview, imgCapture)
+            }
             camera = boundCamera
         } catch (e: Exception) {
-            Log.e("VinCam", "Camera binding with dual Image & Video failed, trying mode-specific binding: ${e.message}")
-            try {
-                provider.unbindAll()
-                val boundCamera = if (uiState.currentMode == CameraMode.VIDEO) {
-                    provider.bindToLifecycle(lifecycleOwner, selector, preview, vidCapture)
-                } else {
-                    provider.bindToLifecycle(lifecycleOwner, selector, preview, imgCapture)
-                }
-                camera = boundCamera
-            } catch (e2: Exception) {
-                Log.e("VinCam", "Fallback camera binding failed: ${e2.message}", e2)
-            }
+            Log.e("VinCam", "Camera binding failed: ${e.message}", e)
+            Toast.makeText(context, "Error: Device does not support this camera resolution or mode.", Toast.LENGTH_LONG).show()
         }
     }
 

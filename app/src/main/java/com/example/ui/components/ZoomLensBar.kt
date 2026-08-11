@@ -94,8 +94,8 @@ fun ZoomLensBar(
                 .clip(RoundedCornerShape(22.dp))
                 .background(MaterialTheme.colorScheme.surface)
                 .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(22.dp))
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             lensOptions.forEach { zoom ->
@@ -114,7 +114,7 @@ fun ZoomLensBar(
                                 onZoomSelected(zoom)
                             }
                         }
-                        .padding(horizontal = 10.dp),
+                        .padding(horizontal = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
