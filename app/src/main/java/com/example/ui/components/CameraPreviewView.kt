@@ -322,7 +322,12 @@ fun CameraPreviewContainer(
             update = { _ ->
                 // Update non-destructive controls (Zoom and Torch) safely without calling unbindAll
                 try {
-                    camera?.cameraControl?.setZoomRatio(uiState.zoomRatio.coerceIn(0.5f, 5.0f))
+                    val zoomState = camera?.cameraInfo?.zoomState?.value
+                    val minZ = zoomState?.minZoomRatio ?: 1.0f
+                    val maxZ = zoomState?.maxZoomRatio ?: 5.0f
+                    val targetZoom = uiState.zoomRatio.coerceIn(minZ, maxZ)
+                    
+                    camera?.cameraControl?.setZoomRatio(targetZoom)
                     if (uiState.flashMode == 3) {
                         camera?.cameraControl?.enableTorch(true)
                     } else {

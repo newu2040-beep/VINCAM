@@ -51,7 +51,7 @@ class MediaStoreRepository(private val context: Context) {
         if (imageUri != null) {
             try {
                 resolver.openOutputStream(imageUri)?.use { outputStream ->
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     contentValues.clear()
@@ -63,7 +63,7 @@ class MediaStoreRepository(private val context: Context) {
 
         imageUri ?: run {
             val localFile = File(context.cacheDir, filename)
-            localFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
+            localFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
             Uri.fromFile(localFile)
         }
     }

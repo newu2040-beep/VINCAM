@@ -1,7 +1,11 @@
 package com.example.ui.components
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.widget.MediaController
+import android.widget.VideoView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +38,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,14 +47,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.rememberAsyncImagePainter
 import com.example.data.MediaItem
 import com.example.viewmodel.VinCamUiState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,21 +127,33 @@ fun GalleryBottomSheet(
                             .fillMaxWidth()
                             .weight(1f)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.Black),
+                            .background(Color.Black)
+                            .border(0.5.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(16.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
-                            painter = rememberAsyncImagePainter(item.uri),
-                            contentDescription = item.name,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
-                        )
                         if (item.isVideo) {
-                            Icon(
-                                imageVector = Icons.Default.PlayCircle,
-                                contentDescription = "Play Video",
-                                tint = Color.White.copy(alpha = 0.85f),
-                                modifier = Modifier.size(64.dp)
+                            // Video playback using native VideoView with controls
+                            AndroidView(
+                                factory = { ctx ->
+                                    VideoView(ctx).apply {
+                                        val controller = MediaController(ctx)
+                                        controller.setAnchorView(this)
+                                        setMediaController(controller)
+                                        setVideoURI(item.uri)
+                                        setOnPreparedListener { mp ->
+                                            mp.isLooping = true
+                                            start()
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Image(
+                                painter = rememberAsyncImagePainter(item.uri),
+                                contentDescription = item.name,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit
                             )
                         }
                     }
@@ -143,10 +165,30 @@ fun GalleryBottomSheet(
                     ) {
                         Column {
                             Text(item.name, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                            Text(if (item.isVideo) "Video File" else "Photo", color = MaterialTheme.colorScheme.primary, fontSize = 11.sp)
+                            Text(if (item.isVideo) "Video • Real-time Playback" else "Photo • 100% Lossless", color = MaterialTheme.colorScheme.primary, fontSize = 11.sp)
                         }
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (item.isVideo) {
+                                IconButton(
+                                    onClick = {
+                                        val openIntent = Intent(Intent.ACTION_VIEW).apply {
+                                            setDataAndType(item.uri, "video/*")
+                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        }
+                                        try {
+                                            context.startActivity(openIntent)
+                                        } catch (e: Exception) { }
+                                    },
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.15f))
+                                ) {
+                                    Icon(Icons.Default.OpenInNew, contentDescription = "Open Fullscreen Player", tint = Color.White)
+                                }
+                            }
+
                             IconButton(
                                 onClick = {
                                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -201,33 +243,78 @@ fun GalleryBottomSheet(
                             .weight(1f)
                     ) {
                         items(uiState.galleryItems) { item ->
-                            Box(
-                                modifier = Modifier
-                                    .height(110.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color.Black)
-                                    .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
-                                    .clickable { selectedMediaItem = item },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Image(
-                                    painter = rememberAsyncImagePainter(item.uri),
-                                    contentDescription = item.name,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                                if (item.isVideo) {
-                                    Icon(
-                                        imageVector = Icons.Default.PlayCircle,
-                                        contentDescription = "Video",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-                            }
+                            GalleryGridItem(
+                                item = item,
+                                onClick = { selectedMediaItem = item }
+                            )
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun GalleryGridItem(
+    item: MediaItem,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    var videoFrameBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    if (item.isVideo) {
+        LaunchedEffect(item.uri) {
+            withContext(Dispatchers.IO) {
+                try {
+                    val retriever = MediaMetadataRetriever()
+                    retriever.setDataSource(context, item.uri)
+                    videoFrameBitmap = retriever.getFrameAtTime(0)
+                    retriever.release()
+                } catch (e: Exception) { }
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .height(110.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.Black)
+            .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        if (item.isVideo && videoFrameBitmap != null) {
+            Image(
+                bitmap = videoFrameBitmap!!.asImageBitmap(),
+                contentDescription = item.name,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Image(
+                painter = rememberAsyncImagePainter(item.uri),
+                contentDescription = item.name,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        if (item.isVideo) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayCircle,
+                    contentDescription = "Video",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }

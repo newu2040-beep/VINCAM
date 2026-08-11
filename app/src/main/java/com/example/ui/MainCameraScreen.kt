@@ -163,6 +163,7 @@ fun MainCameraScreen(
                     onCycleTimer = { viewModel.cycleTimerDuration() },
                     onCycleRatio = { viewModel.setAspectRatio(if (uiState.aspectRatio == "16:9") "4:3" else if (uiState.aspectRatio == "4:3") "1:1" else "16:9") },
                     onSwitchCamera = { viewModel.toggleCameraLens() },
+                    onOpenSettings = { viewModel.openDialogOrSheet("VIDEO_CONFIG") },
                     modifier = Modifier.align(Alignment.TopCenter)
                 )
 

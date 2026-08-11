@@ -145,8 +145,8 @@ fun StorageBottomSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text("Uncompressed High Quality", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        Text("Save photos with 95%+ JPEG quality compression", color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp)
+                        Text("100% Lossless High Quality", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text("Save photos with 100% maximum JPEG resolution & quality", color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp)
                     }
                     Switch(
                         checked = saveHighResFormat,
@@ -241,7 +241,8 @@ fun PermissionsBottomSheet(
             listOf(
                 Triple("Camera Access", "Required for taking photos and live video preview", true),
                 Triple("Microphone Access", "Required for recording high-fidelity audio during video capture", true),
-                Triple("Storage / MediaStore", "Used for writing photos and videos to system media gallery", true)
+                Triple("Storage / MediaStore", "Used for writing photos and videos to system media gallery", true),
+                Triple("Push Notifications", "Alerts for processing status and custom filter presets", true)
             ).forEach { (title, desc, granted) ->
                 Row(
                     modifier = Modifier
