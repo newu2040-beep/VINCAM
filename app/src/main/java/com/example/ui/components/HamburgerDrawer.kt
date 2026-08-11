@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -68,11 +69,11 @@ fun HamburgerDrawerContent(
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .width(300.dp)
+            .width(320.dp)
             .background(MaterialTheme.colorScheme.background)
-            .padding(vertical = 32.dp, horizontal = 24.dp)
+            .padding(vertical = 32.dp, horizontal = 20.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // App Branding Header Card
         Row(
@@ -109,7 +110,7 @@ fun HamburgerDrawerContent(
                     letterSpacing = 2.sp
                 )
                 Text(
-                    text = "RETRO STUDIO • V6.1",
+                    text = "RETRO STUDIO • V9.5",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
@@ -126,7 +127,7 @@ fun HamburgerDrawerContent(
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.sp,
-            modifier = Modifier.padding(start = 12.dp)
+            modifier = Modifier.padding(start = 8.dp)
         )
 
         // Menu Items
@@ -146,11 +147,11 @@ fun HamburgerDrawerContent(
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.sp,
-            modifier = Modifier.padding(start = 12.dp)
+            modifier = Modifier.padding(start = 8.dp)
         )
 
         DrawerMenuItem(icon = Icons.Default.Videocam, title = "Video Recording Settings") { onNavigate("VIDEO_CONFIG") }
-        DrawerMenuItem(icon = Icons.Default.ColorLens, title = "13 Retro Themes") { onNavigate("THEMES") }
+        DrawerMenuItem(icon = Icons.Default.ColorLens, title = "12 Pastel Themes") { onNavigate("THEMES") }
         DrawerMenuItem(icon = Icons.Default.Folder, title = "Storage & Auto-Save") { onNavigate("STORAGE") }
         DrawerMenuItem(icon = Icons.Default.Notifications, title = "Notifications & Permissions") { onNavigate("PERMISSIONS") }
         DrawerMenuItem(icon = Icons.Default.Lock, title = "Privacy Policy") { onNavigate("PRIVACY") }
@@ -174,18 +175,18 @@ fun DrawerMenuItem(icon: ImageVector, title: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .heightIn(min = 48.dp)
             .clip(RoundedCornerShape(14.dp))
             .clickable { onClick() }
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Box(
             modifier = Modifier
                 .size(32.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -197,9 +198,10 @@ fun DrawerMenuItem(icon: ImageVector, title: String, onClick: () -> Unit) {
         }
         Text(
             text = title,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
             fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            lineHeight = 18.sp
         )
     }
 }

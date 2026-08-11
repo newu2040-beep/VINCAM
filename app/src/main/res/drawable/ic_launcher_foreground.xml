@@ -3,6 +3,6 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/vincam_app_icon_1786415233663"
+        android:drawable="@drawable/app_icon_camera"
         android:gravity="center" />
 </layer-list>

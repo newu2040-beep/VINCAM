@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,14 +50,14 @@ fun ThemeSelectorBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color(0xFF1E1B18),
-        scrimColor = Color.Black.copy(alpha = 0.6f)
+        containerColor = MaterialTheme.colorScheme.background,
+        scrimColor = Color.Black.copy(alpha = 0.2f)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(bottom = 32.dp, start = 20.dp, end = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Header
             Row(
@@ -66,16 +67,25 @@ fun ThemeSelectorBottomSheet(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ColorLens,
-                        contentDescription = "Themes",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ColorLens,
+                            contentDescription = "Themes",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                     Text(
-                        text = "13 RETRO THEMES",
-                        color = Color.White,
+                        text = "12 PASTEL THEMES",
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 1.sp
@@ -85,15 +95,15 @@ fun ThemeSelectorBottomSheet(
                 IconButton(
                     onClick = onDismiss,
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(36.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -103,40 +113,59 @@ fun ThemeSelectorBottomSheet(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.height(300.dp)
+                modifier = Modifier.height(340.dp)
             ) {
                 items(VinCamThemeOption.entries) { themeOption ->
                     val isSelected = uiState.currentTheme == themeOption
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(54.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White.copy(alpha = 0.08f))
+                            .height(58.dp)
+                            .shadow(
+                                elevation = if (isSelected) 6.dp else 2.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                spotColor = if (isSelected) themeOption.primaryColor.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.05f)
+                            )
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surface)
                             .border(
                                 width = if (isSelected) 2.dp else 1.dp,
-                                color = if (isSelected) themeOption.primaryColor else Color.White.copy(alpha = 0.12f),
-                                shape = RoundedCornerShape(14.dp)
+                                color = if (isSelected) themeOption.primaryColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                shape = RoundedCornerShape(16.dp)
                             )
                             .clickable { onSelectTheme(themeOption) }
                             .padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // Color Swatch Badge
+                        // Dual Color Swatch Badge
                         Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(themeOption.primaryColor)
-                                .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape)
-                        )
+                            modifier = Modifier.size(30.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .align(Alignment.TopStart)
+                                    .clip(CircleShape)
+                                    .background(themeOption.primaryColor)
+                                    .border(1.dp, Color.White, CircleShape)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .align(Alignment.BottomEnd)
+                                    .clip(CircleShape)
+                                    .background(themeOption.secondaryColor)
+                                    .border(1.dp, Color.White, CircleShape)
+                            )
+                        }
 
                         Text(
                             text = themeOption.displayName,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 12.sp,
-                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold
+                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                            maxLines = 1
                         )
                     }
                 }
