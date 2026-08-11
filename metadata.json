@@ -1,0 +1,6 @@
+{
+  "name": "VinCam",
+  "description": "VinCam is a premium retro/vintage camera focused on photo, video, and pro mode creation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
