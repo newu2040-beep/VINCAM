@@ -84,7 +84,7 @@ fun ThemeSelectorBottomSheet(
                         )
                     }
                     Text(
-                        text = "12 PASTEL THEMES",
+                        text = "15 PASTEL & VINTAGE THEMES",
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.ExtraBold,

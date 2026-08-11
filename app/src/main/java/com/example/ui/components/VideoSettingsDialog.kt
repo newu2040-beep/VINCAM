@@ -103,6 +103,88 @@ fun VideoSettingsBottomSheet(
                 }
             }
 
+            // Real-Time Hardware Capability Warning & Quick Presets Box
+            val isHighQualityUnsupported = config.resolution == VideoResolution.RES_4K || config.fps == VideoFps.FPS_60
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isHighQualityUnsupported) Color(0xFF332000) else Color(0xFF19251E))
+                    .border(
+                        1.dp,
+                        if (isHighQualityUnsupported) Color(0xFFFFB300) else Color(0xFF4CAF50),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = if (isHighQualityUnsupported) "⚠️ HARDWARE COMPATIBILITY NOTICE" else "✅ RECOMMENDED HARDWARE SETTINGS",
+                        color = if (isHighQualityUnsupported) Color(0xFFFFCC00) else Color(0xFF81C784),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Text(
+                    text = if (isHighQualityUnsupported)
+                        "Notice: 4K / 60FPS video recording may suffer frame drops or thermal throttling depending on sensor support. 1080p 30FPS is recommended for maximum stability."
+                    else
+                        "Current configuration is fully supported by this device hardware for smooth, high-frame recording.",
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontSize = 11.sp
+                )
+
+                // Quick One-Tap Recommended Presets
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(32.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF2E4032))
+                            .clickable {
+                                onUpdateVideoConfig {
+                                    it.copy(
+                                        resolution = VideoResolution.RES_1080P,
+                                        fps = VideoFps.FPS_30,
+                                        bitratePreset = BitratePreset.AUTO
+                                    )
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("🌟 1080p 30FPS", color = Color(0xFFA5D6A7), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(32.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.White.copy(alpha = 0.1f))
+                            .clickable {
+                                onUpdateVideoConfig {
+                                    it.copy(
+                                        resolution = VideoResolution.RES_720P,
+                                        fps = VideoFps.FPS_30,
+                                        bitratePreset = BitratePreset.LOW
+                                    )
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("⚡ 720p 30FPS", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
             // Resolution Selector (720p, 1080p, 1440p, 4K)
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("RESOLUTION", color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Bold)

@@ -31,6 +31,14 @@ class MediaStoreRepository(private val context: Context) {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val filename = "VINCAM_$timestamp.jpg"
 
+        val localFolder = File(context.filesDir, "VinCamMedia").apply { mkdirs() }
+        val localFile = File(localFolder, filename)
+        try {
+            localFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         val contentValues = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, filename)
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
@@ -61,16 +69,24 @@ class MediaStoreRepository(private val context: Context) {
             } catch (e: Exception) { }
         }
 
-        imageUri ?: run {
-            val localFile = File(context.cacheDir, filename)
-            localFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
-            Uri.fromFile(localFile)
-        }
+        imageUri ?: Uri.fromFile(localFile)
     }
 
     suspend fun saveVideoFileToMediaStore(videoFile: File): Uri? = withContext(Dispatchers.IO) {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val filename = "VINCAM_$timestamp.mp4"
+
+        val localFolder = File(context.filesDir, "VinCamMedia").apply { mkdirs() }
+        val localFile = File(localFolder, filename)
+        try {
+            videoFile.inputStream().use { input ->
+                localFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         val contentValues = ContentValues().apply {
             put(MediaStore.Video.Media.DISPLAY_NAME, filename)
@@ -104,11 +120,36 @@ class MediaStoreRepository(private val context: Context) {
             } catch (e: Exception) { }
         }
 
-        videoUri ?: Uri.fromFile(videoFile)
+        videoUri ?: Uri.fromFile(localFile)
     }
 
-    suspend fun getRecentMediaItems(limit: Int = 40): List<MediaItem> = withContext(Dispatchers.IO) {
+    suspend fun getRecentMediaItems(limit: Int = 50): List<MediaItem> = withContext(Dispatchers.IO) {
         val items = mutableListOf<MediaItem>()
+        val existingNames = mutableSetOf<String>()
+
+        // 1. Local VinCamMedia folder items
+        val localFolder = File(context.filesDir, "VinCamMedia")
+        if (localFolder.exists()) {
+            localFolder.listFiles()?.forEach { file ->
+                val name = file.name
+                val isVideo = name.endsWith(".mp4", ignoreCase = true)
+                val isJpg = name.endsWith(".jpg", ignoreCase = true) || name.endsWith(".jpeg", ignoreCase = true)
+                if (isVideo || isJpg) {
+                    items.add(
+                        MediaItem(
+                            id = file.hashCode().toLong(),
+                            uri = Uri.fromFile(file),
+                            name = name,
+                            dateTaken = file.lastModified(),
+                            isVideo = isVideo,
+                            sizeBytes = file.length()
+                        )
+                    )
+                    existingNames.add(name)
+                }
+            }
+        }
+
         val projection = arrayOf(
             MediaStore.MediaColumns._ID,
             MediaStore.MediaColumns.DISPLAY_NAME,
@@ -116,60 +157,70 @@ class MediaStoreRepository(private val context: Context) {
             MediaStore.MediaColumns.SIZE
         )
 
-        // Query Images
-        val imageQuery = context.contentResolver.query(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            projection,
-            null,
-            null,
-            "${MediaStore.Images.Media.DATE_TAKEN} DESC"
-        )
-        imageQuery?.use { cursor ->
-            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
-            val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
-            val dateColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN)
-            val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)
+        // Query Images from MediaStore
+        try {
+            val imageQuery = context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                null,
+                null,
+                "${MediaStore.Images.Media.DATE_TAKEN} DESC"
+            )
+            imageQuery?.use { cursor ->
+                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
+                val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
+                val dateColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN)
+                val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)
 
-            var count = 0
-            while (cursor.moveToNext() && count < limit) {
-                val id = cursor.getLong(idColumn)
-                val name = cursor.getString(nameColumn) ?: "Photo"
-                val date = cursor.getLong(dateColumn)
-                val size = cursor.getLong(sizeColumn)
-                val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
+                while (cursor.moveToNext()) {
+                    val name = cursor.getString(nameColumn) ?: "Photo"
+                    if (!existingNames.contains(name)) {
+                        val id = cursor.getLong(idColumn)
+                        val date = cursor.getLong(dateColumn)
+                        val size = cursor.getLong(sizeColumn)
+                        val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
 
-                items.add(MediaItem(id, contentUri, name, date, isVideo = false, sizeBytes = size))
-                count++
+                        items.add(MediaItem(id, contentUri, name, date, isVideo = false, sizeBytes = size))
+                        existingNames.add(name)
+                    }
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
-        // Query Videos
-        val videoQuery = context.contentResolver.query(
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-            projection,
-            null,
-            null,
-            "${MediaStore.Video.Media.DATE_TAKEN} DESC"
-        )
-        videoQuery?.use { cursor ->
-            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
-            val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
-            val dateColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN)
-            val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)
+        // Query Videos from MediaStore
+        try {
+            val videoQuery = context.contentResolver.query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                null,
+                null,
+                "${MediaStore.Video.Media.DATE_TAKEN} DESC"
+            )
+            videoQuery?.use { cursor ->
+                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
+                val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
+                val dateColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN)
+                val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)
 
-            var count = 0
-            while (cursor.moveToNext() && count < limit) {
-                val id = cursor.getLong(idColumn)
-                val name = cursor.getString(nameColumn) ?: "Video"
-                val date = cursor.getLong(dateColumn)
-                val size = cursor.getLong(sizeColumn)
-                val contentUri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
+                while (cursor.moveToNext()) {
+                    val name = cursor.getString(nameColumn) ?: "Video"
+                    if (!existingNames.contains(name)) {
+                        val id = cursor.getLong(idColumn)
+                        val date = cursor.getLong(dateColumn)
+                        val size = cursor.getLong(sizeColumn)
+                        val contentUri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
 
-                items.add(MediaItem(id, contentUri, name, date, isVideo = true, sizeBytes = size))
-                count++
+                        items.add(MediaItem(id, contentUri, name, date, isVideo = true, sizeBytes = size))
+                        existingNames.add(name)
+                    }
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
-        items.sortedByDescending { it.dateTaken }
+        items.sortedByDescending { it.dateTaken }.take(limit)
     }
 }

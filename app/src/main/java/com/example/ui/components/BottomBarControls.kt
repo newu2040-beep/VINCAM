@@ -8,9 +8,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,9 +53,11 @@ fun BottomBarControls(
     uiState: VinCamUiState,
     onModeSelected: (CameraMode) -> Unit,
     onShutterClicked: () -> Unit,
+    onLongPressShutter: () -> Unit = {},
     onPauseResumeVideo: () -> Unit,
     onOpenGallery: () -> Unit,
     onOpenLut: () -> Unit,
+    onCycleShutterStyle: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "recordingPulse")
@@ -182,36 +186,13 @@ fun BottomBarControls(
                 }
             }
 
-            // LARGE VINCAM SHUTTER BUTTON
-            Box(
-                modifier = Modifier
-                    .size(96.dp)
-                    .shadow(elevation = 12.dp, shape = CircleShape, spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .clickable { onShutterClicked() }
-                    .testTag("main_shutter_button"),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(68.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (uiState.currentMode == CameraMode.VIDEO && uiState.isRecording)
-                                VincamRedRecord
-                            else
-                                MaterialTheme.colorScheme.primary
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (uiState.currentMode == CameraMode.VIDEO && uiState.isRecording) {
-                        Box(
-                            modifier = Modifier.size(24.dp).clip(RoundedCornerShape(4.dp)).background(Color.White)
-                        )
-                    }
-                }
-            }
+            // CUSTOMIZABLE AESTHETIC RETRO SHUTTER BUTTON
+            CustomShutterButtonComposable(
+                uiState = uiState,
+                onShutterClicked = onShutterClicked,
+                onLongPressShutter = onLongPressShutter,
+                onCycleShutterStyle = onCycleShutterStyle
+            )
 
             // Secondary Action (Pause/Resume during Video, or LUT Switcher)
             if (uiState.currentMode == CameraMode.VIDEO && uiState.isRecording) {
@@ -249,6 +230,92 @@ fun BottomBarControls(
                     )
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun CustomShutterButtonComposable(
+    uiState: VinCamUiState,
+    onShutterClicked: () -> Unit,
+    onLongPressShutter: () -> Unit = {},
+    onCycleShutterStyle: () -> Unit
+) {
+    val isVideoRecording = uiState.currentMode == CameraMode.VIDEO && uiState.isRecording
+
+    val ringColor = when (uiState.shutterButtonStyle) {
+        "VINTAGE_CHROME" -> Color(0xFFE0E0E0)
+        "PASTEL_ROSE" -> Color(0xFFFFD1DC)
+        "LEICA_RED" -> Color(0xFF2A2A2A)
+        "NEON_CYAN" -> Color(0xFF00E5FF)
+        else -> Color(0xFFFFD700) // CLASSIC_GOLD
+    }
+
+    val centerColor = if (isVideoRecording) {
+        VincamRedRecord
+    } else {
+        when (uiState.shutterButtonStyle) {
+            "VINTAGE_CHROME" -> Color(0xFFD32F2F)
+            "PASTEL_ROSE" -> Color(0xFFFFFDD0)
+            "LEICA_RED" -> Color(0xFFE53935)
+            "NEON_CYAN" -> Color(0xFF121212)
+            else -> MaterialTheme.colorScheme.primary // CLASSIC_GOLD
+        }
+    }
+
+    Box(
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .shadow(
+                    elevation = 12.dp,
+                    shape = CircleShape,
+                    spotColor = ringColor.copy(alpha = 0.5f)
+                )
+                .clip(CircleShape)
+                .background(ringColor)
+                .combinedClickable(
+                    onClick = { onShutterClicked() },
+                    onLongClick = { onLongPressShutter() }
+                )
+                .testTag("main_shutter_button"),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(68.dp)
+                    .clip(CircleShape)
+                    .background(centerColor),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isVideoRecording) {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color.White)
+                    )
+                }
+            }
+        }
+
+        // Small shutter style badge button on top right of shutter button
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(26.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface)
+                .clickable { onCycleShutterStyle() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "🎨",
+                fontSize = 12.sp
+            )
         }
     }
 }

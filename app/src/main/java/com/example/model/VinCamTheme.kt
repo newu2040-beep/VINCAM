@@ -122,6 +122,36 @@ enum class VinCamThemeOption(
         textPrimary = Color(0xFF33691E), // Deep Olive
         isDark = false
     ),
+    VANILLA_LATTE(
+        displayName = "Vanilla Latte",
+        primaryColor = Color(0xFFD7CCC8), // Warm Coffee Cream
+        secondaryColor = Color(0xFFA1887F), // Espresso Tan
+        backgroundColor = Color(0xFFEFEBE9), // Soft Linen
+        surfaceColor = Color(0xFFD7CCC8), // Warm Oat
+        accentColor = Color(0xFF8D6E63), // Cocoa
+        textPrimary = Color(0xFF3E2723), // Deep Coffee
+        isDark = false
+    ),
+    CLOUD_NINE(
+        displayName = "Cloud Nine",
+        primaryColor = Color(0xFF81D4FA), // Powder Blue
+        secondaryColor = Color(0xFFB3E5FC), // Soft Cyan
+        backgroundColor = Color(0xFFF1F8E9), // Cloud Cream
+        surfaceColor = Color(0xFFE1F5FE), // Light Breeze
+        accentColor = Color(0xFF4FC3F7), // Sky Accent
+        textPrimary = Color(0xFF01579B), // Deep Navy
+        isDark = false
+    ),
+    BUBBLEGUM_SKY(
+        displayName = "Bubblegum Sky",
+        primaryColor = Color(0xFFFF80AB), // Bubblegum Pink
+        secondaryColor = Color(0xFF80D8FF), // Pastel Cyan
+        backgroundColor = Color(0xFFFFF4F8), // Pale Rose
+        surfaceColor = Color(0xFFFFE4EC), // Sweet Pink
+        accentColor = Color(0xFF82B1FF), // Soft Sky
+        textPrimary = Color(0xFF880E4F), // Deep Plum
+        isDark = false
+    ),
     VELVET_PASTEL_NIGHT(
         displayName = "Velvet Night",
         primaryColor = Color(0xFFFF8A80), // Rose Gold Glow

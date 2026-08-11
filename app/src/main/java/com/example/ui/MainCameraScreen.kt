@@ -151,7 +151,9 @@ fun MainCameraScreen(
                     onVideoCaptureFinished = { videoFile ->
                         viewModel.processAndSaveCapturedVideo(videoFile) { uri -> }
                     },
-                    setCaptureController = { controller -> captureController = controller }
+                    setCaptureController = { controller -> captureController = controller },
+                    onExposureChanged = { ev -> viewModel.setExposureEv(ev) },
+                    onToggleAeAfLock = { viewModel.toggleAeAfLock() }
                 )
 
                 // Interactive Overlays Canvas Layer
@@ -190,7 +192,7 @@ fun MainCameraScreen(
                     },
                     onCycleFlash = { viewModel.cycleFlashMode() },
                     onCycleTimer = { viewModel.cycleTimerDuration() },
-                    onCycleRatio = { viewModel.setAspectRatio(if (uiState.aspectRatio == "16:9") "4:3" else if (uiState.aspectRatio == "4:3") "1:1" else "16:9") },
+                    onCycleRatio = { viewModel.cycleAspectRatio() },
                     onSwitchCamera = { viewModel.toggleCameraLens() },
                     onOpenSettings = { viewModel.openDialogOrSheet("VIDEO_CONFIG") },
                     onToggleTune = { showExposureSliders = !showExposureSliders },
@@ -244,7 +246,7 @@ fun MainCameraScreen(
                             
                             val performCapture = {
                                 when (uiState.currentMode) {
-                                    CameraMode.PHOTO, CameraMode.PRO -> {
+                                    CameraMode.PHOTO, CameraMode.NIGHT, CameraMode.PRO -> {
                                         captureController?.takePhoto()
                                     }
                                     CameraMode.VIDEO -> {
@@ -272,6 +274,12 @@ fun MainCameraScreen(
                                 performCapture()
                             }
                         },
+                        onLongPressShutter = {
+                            if (uiState.currentMode == CameraMode.PHOTO || uiState.currentMode == CameraMode.NIGHT || uiState.currentMode == CameraMode.PRO) {
+                                viewModel.showToast("🔥 BURST SHOT (5 Photos)")
+                                captureController?.takeBurstShot(5)
+                            }
+                        },
                         onPauseResumeVideo = {
                             if (uiState.isRecordingPaused) {
                                 captureController?.resumeVideoRecording()
@@ -282,7 +290,8 @@ fun MainCameraScreen(
                             }
                         },
                         onOpenGallery = { viewModel.openDialogOrSheet("GALLERY") },
-                        onOpenLut = { viewModel.openDialogOrSheet("LUT") }
+                        onOpenLut = { viewModel.openDialogOrSheet("LUT") },
+                        onCycleShutterStyle = { viewModel.cycleShutterStyle() }
                     )
                 }
 

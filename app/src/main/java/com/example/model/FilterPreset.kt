@@ -6,7 +6,8 @@ enum class FilterCategory(val label: String) {
     RETRO("RETRO"),
     FILM("FILM"),
     CINEMA("CINEMA"),
-    AESTHETIC("AESTHETIC")
+    AESTHETIC("AESTHETIC"),
+    PASTEL("PASTEL")
 }
 
 data class FilterPreset(
@@ -458,6 +459,164 @@ data class FilterPreset(
                     0f, 0f, 0f, 1f, 0f
                 ),
                 saturationOffset = -0.30f
+            ),
+
+            // NEW UNIQUE LUTS & PASTEL LUT CATEGORY
+            FilterPreset(
+                id = "lut_kodachrome_64",
+                name = "Kodachrome 64",
+                category = FilterCategory.RETRO,
+                description = "Iconic 1960s slide film with rich reds and saturated yellows",
+                colorMatrix = floatArrayOf(
+                    1.30f, 0.05f, -0.05f, 0f, 20f,
+                    0.05f, 1.15f, -0.05f, 0f, 10f,
+                    -0.10f, -0.05f, 0.85f, 0f, -8f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                contrastOffset = 0.20f,
+                grainLevel = 0.30f
+            ),
+            FilterPreset(
+                id = "lut_fuji_velvia",
+                name = "Fuji Velvia",
+                category = FilterCategory.FILM,
+                description = "Ultra-vibrant landscape film with lush greens and vivid skies",
+                colorMatrix = floatArrayOf(
+                    1.15f, -0.05f, 0.00f, 0f, 8f,
+                    -0.05f, 1.35f, -0.05f, 0f, 12f,
+                    0.00f, -0.05f, 1.25f, 0f, 15f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                saturationOffset = 0.35f
+            ),
+            FilterPreset(
+                id = "lut_cyberpunk_neon",
+                name = "Cyberpunk Neon",
+                category = FilterCategory.CINEMA,
+                description = "Futuristic electric cyan shadows and hot magenta highlights",
+                colorMatrix = floatArrayOf(
+                    1.40f, -0.20f, 0.10f, 0f, 25f,
+                    -0.10f, 0.90f, 0.20f, 0f, -10f,
+                    0.20f, -0.10f, 1.50f, 0f, 35f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                contrastOffset = 0.35f,
+                vignetteLevel = 0.35f
+            ),
+            FilterPreset(
+                id = "lut_golden_70s",
+                name = "Golden 70s",
+                category = FilterCategory.RETRO,
+                description = "Warm amber golden-hour vinyl aesthetic",
+                colorMatrix = floatArrayOf(
+                    1.35f, 0.12f, -0.15f, 0f, 30f,
+                    0.08f, 1.18f, -0.10f, 0f, 20f,
+                    -0.15f, -0.05f, 0.75f, 0f, -15f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                temperatureOffset = 35f
+            ),
+            FilterPreset(
+                id = "lut_pastel_lavender",
+                name = "Lavender Cream",
+                category = FilterCategory.PASTEL,
+                description = "Soft lilac shadows with smooth cream highlights",
+                colorMatrix = floatArrayOf(
+                    1.10f, 0.08f, 0.12f, 0f, 18f,
+                    0.05f, 1.05f, 0.10f, 0f, 12f,
+                    0.10f, 0.08f, 1.25f, 0f, 28f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                contrastOffset = -0.10f
+            ),
+            FilterPreset(
+                id = "lut_pastel_peach",
+                name = "Peach Sorbet",
+                category = FilterCategory.PASTEL,
+                description = "Warm apricot soft glow and flattering skin tones",
+                colorMatrix = floatArrayOf(
+                    1.25f, 0.10f, -0.05f, 0f, 28f,
+                    0.08f, 1.12f, -0.02f, 0f, 18f,
+                    -0.05f, 0.02f, 0.90f, 0f, 5f,
+                    0f, 0f, 0f, 1f, 0f
+                )
+            ),
+            FilterPreset(
+                id = "lut_pastel_mint",
+                name = "Mint Sorbet",
+                category = FilterCategory.PASTEL,
+                description = "Refreshing pastel sage green and airy whites",
+                colorMatrix = floatArrayOf(
+                    1.02f, 0.10f, -0.02f, 0f, 8f,
+                    0.10f, 1.22f, 0.05f, 0f, 22f,
+                    0.02f, 0.08f, 1.05f, 0f, 12f,
+                    0f, 0f, 0f, 1f, 0f
+                )
+            ),
+            FilterPreset(
+                id = "lut_noir_monochrome",
+                name = "Noir Monochromatic",
+                category = FilterCategory.FILM,
+                description = "Deep silver halide black and white film emulsion",
+                colorMatrix = floatArrayOf(
+                    0.35f, 0.55f, 0.10f, 0f, -10f,
+                    0.35f, 0.55f, 0.10f, 0f, -10f,
+                    0.35f, 0.55f, 0.10f, 0f, -10f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                contrastOffset = 0.30f,
+                grainLevel = 0.45f
+            ),
+            FilterPreset(
+                id = "lut_infrared_rose",
+                name = "Infrared Rose",
+                category = FilterCategory.AESTHETIC,
+                description = "Surreal false-color infrared foliage with rose hues",
+                colorMatrix = floatArrayOf(
+                    1.45f, 0.20f, -0.20f, 0f, 35f,
+                    0.10f, 0.85f, 0.10f, 0f, -5f,
+                    0.25f, -0.15f, 1.30f, 0f, 20f,
+                    0f, 0f, 0f, 1f, 0f
+                )
+            ),
+            FilterPreset(
+                id = "lut_moody_indigo",
+                name = "Moody Indigo",
+                category = FilterCategory.CINEMA,
+                description = "Atmospheric twilight blue shadows and muted warm tones",
+                colorMatrix = floatArrayOf(
+                    0.88f, 0.04f, 0.08f, 0f, -8f,
+                    0.02f, 0.98f, 0.12f, 0f, 2f,
+                    0.08f, 0.10f, 1.35f, 0f, 28f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                temperatureOffset = -30f,
+                vignetteLevel = 0.30f
+            ),
+            FilterPreset(
+                id = "lut_emerald_forest",
+                name = "Emerald Forest",
+                category = FilterCategory.AESTHETIC,
+                description = "Rich botanical emerald tones with deep moss shadows",
+                colorMatrix = floatArrayOf(
+                    0.92f, 0.12f, -0.05f, 0f, -2f,
+                    0.05f, 1.28f, -0.02f, 0f, 16f,
+                    -0.05f, 0.08f, 1.10f, 0f, 10f,
+                    0f, 0f, 0f, 1f, 0f
+                )
+            ),
+            FilterPreset(
+                id = "lut_warm_sunset",
+                name = "Warm Sunset",
+                category = FilterCategory.PASTEL,
+                description = "Gradient warm sunset glow with soft rose vanilla",
+                colorMatrix = floatArrayOf(
+                    1.32f, 0.12f, -0.08f, 0f, 32f,
+                    0.08f, 1.15f, -0.05f, 0f, 20f,
+                    -0.08f, 0.02f, 0.88f, 0f, 5f,
+                    0f, 0f, 0f, 1f, 0f
+                ),
+                temperatureOffset = 25f
             )
         )
     }

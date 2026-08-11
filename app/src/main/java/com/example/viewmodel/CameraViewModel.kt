@@ -58,6 +58,8 @@ data class VinCamUiState(
     val recordingDurationSeconds: Long = 0L,
     val autoSaveToGallery: Boolean = true,
     val currentTheme: VinCamThemeOption = VinCamThemeOption.VINCAM_PASTEL,
+    val shutterButtonStyle: String = "CLASSIC_GOLD", // CLASSIC_GOLD, VINTAGE_CHROME, PASTEL_ROSE, LEICA_RED, NEON_CYAN
+    val isAeAfLocked: Boolean = false,
     val galleryItems: List<MediaItem> = emptyList(),
     val lastCapturedUri: Uri? = null,
     val pendingSaveItem: MediaItem? = null,
@@ -129,6 +131,43 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setAspectRatio(ratio: String) {
         _uiState.update { it.copy(aspectRatio = ratio) }
+    }
+
+    fun cycleAspectRatio() {
+        _uiState.update {
+            val next = when (it.aspectRatio) {
+                "16:9" -> "4:3"
+                "4:3" -> "1:1"
+                "1:1" -> "9:16"
+                "9:16" -> "2.39:1"
+                "2.39:1" -> "POLAROID"
+                else -> "16:9"
+            }
+            it.copy(aspectRatio = next)
+        }
+    }
+
+    fun cycleShutterStyle() {
+        _uiState.update {
+            val next = when (it.shutterButtonStyle) {
+                "CLASSIC_GOLD" -> "VINTAGE_CHROME"
+                "VINTAGE_CHROME" -> "PASTEL_ROSE"
+                "PASTEL_ROSE" -> "LEICA_RED"
+                "LEICA_RED" -> "NEON_CYAN"
+                else -> "CLASSIC_GOLD"
+            }
+            it.copy(shutterButtonStyle = next, toastMessage = "Shutter: ${next.replace('_', ' ')}")
+        }
+    }
+
+    fun toggleAeAfLock() {
+        _uiState.update {
+            val nextLock = !it.isAeAfLocked
+            it.copy(
+                isAeAfLocked = nextLock,
+                toastMessage = if (nextLock) "AE/AF LOCKED" else "AE/AF UNLOCKED"
+            )
+        }
     }
 
     fun cycleFlashMode() {

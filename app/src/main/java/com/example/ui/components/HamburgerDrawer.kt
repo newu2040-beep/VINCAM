@@ -151,7 +151,7 @@ fun HamburgerDrawerContent(
         )
 
         DrawerMenuItem(icon = Icons.Default.Videocam, title = "Video Recording Settings") { onNavigate("VIDEO_CONFIG") }
-        DrawerMenuItem(icon = Icons.Default.ColorLens, title = "12 Pastel Themes") { onNavigate("THEMES") }
+        DrawerMenuItem(icon = Icons.Default.ColorLens, title = "15 Pastel Themes") { onNavigate("THEMES") }
         DrawerMenuItem(icon = Icons.Default.Folder, title = "Storage & Auto-Save") { onNavigate("STORAGE") }
         DrawerMenuItem(icon = Icons.Default.Notifications, title = "Notifications & Permissions") { onNavigate("PERMISSIONS") }
         DrawerMenuItem(icon = Icons.Default.Lock, title = "Privacy Policy") { onNavigate("PRIVACY") }
