@@ -54,7 +54,7 @@ fun TopBarControls(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // App Identity Label (Geometric Balance style with orange indicator)
+        // App Identity Label (Geometric Balance style with dynamic theme indicator)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -67,11 +67,11 @@ fun TopBarControls(
                 modifier = Modifier
                     .size(8.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFFF6321))
+                    .background(MaterialTheme.colorScheme.primary)
             )
             Text(
                 text = "VINCAM V1.0",
-                color = Color(0xFFF5F2ED).copy(alpha = 0.65f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp
@@ -89,7 +89,7 @@ fun TopBarControls(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1A1A1A))
+                    .background(MaterialTheme.colorScheme.surface)
                     .border(0.5.dp, Color.White.copy(alpha = 0.12f), CircleShape)
                     .testTag("flash_toggle_button")
             ) {
@@ -99,7 +99,7 @@ fun TopBarControls(
                     3 -> Icons.Default.Highlight
                     else -> Icons.Default.FlashOff
                 }
-                val flashTint = if (uiState.flashMode > 0) Color(0xFFFF6321) else Color(0xFFF5F2ED).copy(alpha = 0.8f)
+                val flashTint = if (uiState.flashMode > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 Icon(
                     imageVector = flashIcon,
                     contentDescription = "Flash Mode",
@@ -113,7 +113,7 @@ fun TopBarControls(
                 modifier = Modifier
                     .height(38.dp)
                     .clip(RoundedCornerShape(19.dp))
-                    .background(Color(0xFF1A1A1A))
+                    .background(MaterialTheme.colorScheme.surface)
                     .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(19.dp))
                     .clickable { onCycleTimer() }
                     .padding(horizontal = 10.dp),
@@ -126,13 +126,13 @@ fun TopBarControls(
                     Icon(
                         imageVector = Icons.Default.Timer,
                         contentDescription = "Timer",
-                        tint = if (uiState.timerSeconds > 0) Color(0xFFFF6321) else Color(0xFFF5F2ED).copy(alpha = 0.8f),
+                        tint = if (uiState.timerSeconds > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                         modifier = Modifier.size(16.dp)
                     )
                     AnimatedVisibility(visible = uiState.timerSeconds > 0) {
                         Text(
                             text = "${uiState.timerSeconds}s",
-                            color = Color(0xFFFF6321),
+                            color = MaterialTheme.colorScheme.primary,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -145,7 +145,7 @@ fun TopBarControls(
                 modifier = Modifier
                     .height(38.dp)
                     .clip(RoundedCornerShape(19.dp))
-                    .background(Color(0xFF1A1A1A))
+                    .background(MaterialTheme.colorScheme.surface)
                     .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(19.dp))
                     .clickable { onCycleRatio() }
                     .padding(horizontal = 10.dp),
@@ -153,7 +153,7 @@ fun TopBarControls(
             ) {
                 Text(
                     text = uiState.aspectRatio,
-                    color = Color(0xFFF5F2ED),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -166,14 +166,14 @@ fun TopBarControls(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1A1A1A))
+                    .background(MaterialTheme.colorScheme.surface)
                     .border(0.5.dp, Color.White.copy(alpha = 0.12f), CircleShape)
                     .testTag("switch_camera_button")
             ) {
                 Icon(
                     imageVector = Icons.Default.Cameraswitch,
                     contentDescription = "Switch Camera Lens",
-                    tint = Color(0xFFF5F2ED),
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -184,14 +184,14 @@ fun TopBarControls(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1A1A1A))
+                    .background(MaterialTheme.colorScheme.surface)
                     .border(0.5.dp, Color.White.copy(alpha = 0.12f), CircleShape)
                     .testTag("hamburger_menu_button")
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
                     contentDescription = "Open Menu",
-                    tint = Color(0xFFF5F2ED),
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(18.dp)
                 )
             }

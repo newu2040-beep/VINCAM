@@ -21,6 +21,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.FallbackStrategy
 import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
@@ -94,12 +95,81 @@ fun CameraPreviewContainer(
     val focusRingAlpha = remember { Animatable(1.0f) }
     val coroutineScope = rememberCoroutineScope()
 
-    // Initialize Camera Provider
+    var previewViewRef by remember { mutableStateOf<PreviewView?>(null) }
+
+    // Initialize Camera Provider & Bind Lifecycle cleanly
     LaunchedEffect(Unit) {
         val providerFuture = ProcessCameraProvider.getInstance(context)
         providerFuture.addListener({
             cameraProvider = providerFuture.get()
         }, ContextCompat.getMainExecutor(context))
+    }
+
+    LaunchedEffect(cameraProvider, uiState.isFrontCamera, uiState.videoConfig.resolution, previewViewRef) {
+        val provider = cameraProvider ?: return@LaunchedEffect
+        val pView = previewViewRef ?: return@LaunchedEffect
+
+        // Do not unbind while recording is actively in progress
+        if (activeRecording != null) return@LaunchedEffect
+
+        val selector = if (uiState.isFrontCamera) {
+            CameraSelector.DEFAULT_FRONT_CAMERA
+        } else {
+            CameraSelector.DEFAULT_BACK_CAMERA
+        }
+
+        val preview = Preview.Builder().build().also {
+            it.surfaceProvider = pView.surfaceProvider
+        }
+
+        val imgCapture = ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .setFlashMode(
+                when (uiState.flashMode) {
+                    1 -> ImageCapture.FLASH_MODE_AUTO
+                    2, 3 -> ImageCapture.FLASH_MODE_ON
+                    else -> ImageCapture.FLASH_MODE_OFF
+                }
+            )
+            .build()
+        imageCapture = imgCapture
+
+        val preferredQuality = when (uiState.videoConfig.resolution) {
+            VideoResolution.RES_4K -> Quality.UHD
+            VideoResolution.RES_1440P -> Quality.FHD
+            VideoResolution.RES_1080P -> Quality.FHD
+            VideoResolution.RES_720P -> Quality.HD
+        }
+
+        val qualitySelector = QualitySelector.from(
+            preferredQuality,
+            FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
+        )
+
+        val recorder = Recorder.Builder()
+            .setQualitySelector(qualitySelector)
+            .build()
+        val vidCapture = VideoCapture.withOutput(recorder)
+        videoCapture = vidCapture
+
+        try {
+            provider.unbindAll()
+            val boundCamera = provider.bindToLifecycle(lifecycleOwner, selector, preview, imgCapture, vidCapture)
+            camera = boundCamera
+        } catch (e: Exception) {
+            Log.e("VinCam", "Camera binding with dual Image & Video failed, trying mode-specific binding: ${e.message}")
+            try {
+                provider.unbindAll()
+                val boundCamera = if (uiState.currentMode == CameraMode.VIDEO) {
+                    provider.bindToLifecycle(lifecycleOwner, selector, preview, vidCapture)
+                } else {
+                    provider.bindToLifecycle(lifecycleOwner, selector, preview, imgCapture)
+                }
+                camera = boundCamera
+            } catch (e2: Exception) {
+                Log.e("VinCam", "Fallback camera binding failed: ${e2.message}", e2)
+            }
+        }
     }
 
     // Set up Capture Controller for ViewModel/UI triggers
@@ -159,7 +229,7 @@ fun CameraPreviewContainer(
                     activeRecording = pendingRecording.start(ContextCompat.getMainExecutor(context)) { event ->
                         when (event) {
                             is VideoRecordEvent.Finalize -> {
-                                if (!event.hasError()) {
+                                if (!event.hasError() || videoFile.exists() && videoFile.length() > 0) {
                                     onVideoCaptureFinished(videoFile)
                                 } else {
                                     Log.e("VinCam", "Video record finalize error: ${event.error}")
@@ -246,66 +316,20 @@ fun CameraPreviewContainer(
                         gestureDetector.onTouchEvent(event)
                         true
                     }
+                    previewViewRef = this
                 }
             },
-            update = { previewView ->
-                val provider = cameraProvider ?: return@AndroidView
-
-                val selector = if (uiState.isFrontCamera) {
-                    CameraSelector.DEFAULT_FRONT_CAMERA
-                } else {
-                    CameraSelector.DEFAULT_BACK_CAMERA
-                }
-
-                val preview = Preview.Builder().build().also {
-                    it.surfaceProvider = previewView.surfaceProvider
-                }
-
-                val imgCapture = ImageCapture.Builder()
-                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                    .setFlashMode(
-                        when (uiState.flashMode) {
-                            1 -> ImageCapture.FLASH_MODE_AUTO
-                            2, 3 -> ImageCapture.FLASH_MODE_ON
-                            else -> ImageCapture.FLASH_MODE_OFF
-                        }
-                    )
-                    .build()
-                imageCapture = imgCapture
-
-                val recorder = Recorder.Builder()
-                    .setQualitySelector(
-                        QualitySelector.from(
-                            when (uiState.videoConfig.resolution) {
-                                VideoResolution.RES_4K -> Quality.UHD
-                                VideoResolution.RES_1440P -> Quality.FHD
-                                VideoResolution.RES_1080P -> Quality.FHD
-                                VideoResolution.RES_720P -> Quality.HD
-                            }
-                        )
-                    )
-                    .build()
-                val vidCapture = VideoCapture.withOutput(recorder)
-                videoCapture = vidCapture
-
+            update = { _ ->
+                // Update non-destructive controls (Zoom and Torch) safely without calling unbindAll
                 try {
-                    provider.unbindAll()
-                    val boundCamera = if (uiState.currentMode == CameraMode.VIDEO) {
-                        provider.bindToLifecycle(lifecycleOwner, selector, preview, vidCapture)
-                    } else {
-                        provider.bindToLifecycle(lifecycleOwner, selector, preview, imgCapture)
-                    }
-                    camera = boundCamera
-
-                    // Apply zoom & torch
-                    boundCamera.cameraControl.setZoomRatio(uiState.zoomRatio.coerceIn(0.5f, 5.0f))
+                    camera?.cameraControl?.setZoomRatio(uiState.zoomRatio.coerceIn(0.5f, 5.0f))
                     if (uiState.flashMode == 3) {
-                        boundCamera.cameraControl.enableTorch(true)
+                        camera?.cameraControl?.enableTorch(true)
                     } else {
-                        boundCamera.cameraControl.enableTorch(false)
+                        camera?.cameraControl?.enableTorch(false)
                     }
                 } catch (e: Exception) {
-                    Log.e("VinCam", "Camera binding failed: ${e.message}", e)
+                    Log.e("VinCam", "Failed updating camera controls: ${e.message}")
                 }
             }
         )

@@ -34,6 +34,7 @@ class MediaStoreRepository(private val context: Context) {
         val contentValues = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, filename)
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/VinCam")
                 put(MediaStore.Images.Media.IS_PENDING, 1)
@@ -41,19 +42,30 @@ class MediaStoreRepository(private val context: Context) {
         }
 
         val resolver = context.contentResolver
-        val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-
-        imageUri?.let { uri ->
-            resolver.openOutputStream(uri)?.use { outputStream ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                contentValues.clear()
-                contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
-                resolver.update(uri, contentValues, null, null)
-            }
+        val imageUri = try {
+            resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+        } catch (e: Exception) {
+            null
         }
-        imageUri
+
+        if (imageUri != null) {
+            try {
+                resolver.openOutputStream(imageUri)?.use { outputStream ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+                    resolver.update(imageUri, contentValues, null, null)
+                }
+            } catch (e: Exception) { }
+        }
+
+        imageUri ?: run {
+            val localFile = File(context.cacheDir, filename)
+            localFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
+            Uri.fromFile(localFile)
+        }
     }
 
     suspend fun saveVideoFileToMediaStore(videoFile: File): Uri? = withContext(Dispatchers.IO) {
@@ -63,6 +75,7 @@ class MediaStoreRepository(private val context: Context) {
         val contentValues = ContentValues().apply {
             put(MediaStore.Video.Media.DISPLAY_NAME, filename)
             put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+            put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/VinCam")
                 put(MediaStore.Video.Media.IS_PENDING, 1)
@@ -70,21 +83,28 @@ class MediaStoreRepository(private val context: Context) {
         }
 
         val resolver = context.contentResolver
-        val videoUri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
-
-        videoUri?.let { uri ->
-            resolver.openOutputStream(uri)?.use { outputStream ->
-                videoFile.inputStream().use { inputStream ->
-                    inputStream.copyTo(outputStream)
-                }
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                contentValues.clear()
-                contentValues.put(MediaStore.Video.Media.IS_PENDING, 0)
-                resolver.update(uri, contentValues, null, null)
-            }
+        val videoUri = try {
+            resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+        } catch (e: Exception) {
+            null
         }
-        videoUri
+
+        if (videoUri != null) {
+            try {
+                resolver.openOutputStream(videoUri)?.use { outputStream ->
+                    videoFile.inputStream().use { inputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Video.Media.IS_PENDING, 0)
+                    resolver.update(videoUri, contentValues, null, null)
+                }
+            } catch (e: Exception) { }
+        }
+
+        videoUri ?: Uri.fromFile(videoFile)
     }
 
     suspend fun getRecentMediaItems(limit: Int = 40): List<MediaItem> = withContext(Dispatchers.IO) {

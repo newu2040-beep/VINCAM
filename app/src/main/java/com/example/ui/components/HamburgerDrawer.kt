@@ -69,7 +69,7 @@ fun HamburgerDrawerContent(
         modifier = Modifier
             .fillMaxHeight()
             .width(300.dp)
-            .background(Color(0xFF0D0D0D))
+            .background(MaterialTheme.colorScheme.background)
             .padding(vertical = 24.dp, horizontal = 16.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -79,7 +79,7 @@ fun HamburgerDrawerContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(18.dp))
-                .background(Color(0xFF1A1A1A))
+                .background(MaterialTheme.colorScheme.surface)
                 .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -89,7 +89,7 @@ fun HamburgerDrawerContent(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFFF6321)),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -103,14 +103,14 @@ fun HamburgerDrawerContent(
             Column {
                 Text(
                     text = "VINCAM",
-                    color = Color(0xFFF5F2ED),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp
                 )
                 Text(
                     text = "RETRO CAMERA STUDIO",
-                    color = Color(0xFFFF6321),
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -184,12 +184,12 @@ fun DrawerMenuItem(icon: ImageVector, title: String, onClick: () -> Unit) {
         Icon(
             imageVector = icon,
             contentDescription = title,
-            tint = Color(0xFFFF6321),
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(20.dp)
         )
         Text(
             text = title,
-            color = Color(0xFFF5F2ED).copy(alpha = 0.9f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
             fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold
         )

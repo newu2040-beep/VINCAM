@@ -73,14 +73,14 @@ fun ZoomLensBar(
                     valueRange = 0.5f..5.0f,
                     modifier = Modifier.weight(1f),
                     colors = SliderDefaults.colors(
-                        thumbColor = Color(0xFFFF6321),
-                        activeTrackColor = Color(0xFFFF6321),
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
                         inactiveTrackColor = Color.White.copy(alpha = 0.15f)
                     )
                 )
                 Text(
                     text = String.format("%.1fx", uiState.zoomRatio),
-                    color = Color(0xFFFF6321),
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.sp
@@ -92,7 +92,7 @@ fun ZoomLensBar(
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(22.dp))
-                .background(Color(0xFF1A1A1A))
+                .background(MaterialTheme.colorScheme.surface)
                 .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(22.dp))
                 .padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -105,7 +105,7 @@ fun ZoomLensBar(
                         .height(30.dp)
                         .clip(RoundedCornerShape(15.dp))
                         .background(
-                            if (isSelected) Color(0xFFFF6321) else Color.Transparent
+                            if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
                         )
                         .clickable {
                             if (isSelected) {
@@ -119,7 +119,7 @@ fun ZoomLensBar(
                 ) {
                     Text(
                         text = if (zoom == 1.0f) "1x" else if (zoom == 0.5f) "0.5x" else "${zoom.toInt()}x",
-                        color = if (isSelected) Color.Black else Color(0xFFF5F2ED).copy(alpha = 0.6f),
+                        color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         fontSize = 12.sp,
                         fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
                         letterSpacing = 1.sp

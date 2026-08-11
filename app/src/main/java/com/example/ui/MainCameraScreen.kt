@@ -47,11 +47,15 @@ import com.example.ui.components.ExposureTempOverlaySliders
 import com.example.ui.components.FilterPickerBottomSheet
 import com.example.ui.components.GalleryBottomSheet
 import com.example.ui.components.HamburgerDrawerContent
+import com.example.ui.components.HelpManualBottomSheet
 import com.example.ui.components.OverlayCanvas
 import com.example.ui.components.OverlayEditorBottomSheet
 import com.example.ui.components.PermissionOnboardingScreen
+import com.example.ui.components.PermissionsBottomSheet
 import com.example.ui.components.PresetManagerBottomSheet
+import com.example.ui.components.PrivacyPolicyBottomSheet
 import com.example.ui.components.ProModeControlsOverlay
+import com.example.ui.components.StorageBottomSheet
 import com.example.ui.components.ThemeSelectorBottomSheet
 import com.example.ui.components.TopBarControls
 import com.example.ui.components.VideoSettingsBottomSheet
@@ -221,12 +225,19 @@ fun MainCameraScreen(
                                 viewModel.pauseRecording()
                             }
                         },
-                        onOpenGallery = { viewModel.openDialogOrSheet("GALLERY") }
+                        onOpenGallery = { viewModel.openDialogOrSheet("GALLERY") },
+                        onOpenLut = { viewModel.openDialogOrSheet("LUT") }
                     )
                 }
 
                 // Modal Bottom Sheets
                 when (uiState.activeDialogOrSheet) {
+                    "PRO_SETTINGS" -> {
+                        LaunchedEffect(Unit) {
+                            viewModel.setCameraMode(CameraMode.PRO)
+                            viewModel.closeDialogOrSheet()
+                        }
+                    }
                     "LUT" -> {
                         FilterPickerBottomSheet(
                             uiState = uiState,
@@ -272,6 +283,30 @@ fun MainCameraScreen(
                     }
                     "GALLERY" -> {
                         GalleryBottomSheet(
+                            uiState = uiState,
+                            onDismiss = { viewModel.closeDialogOrSheet() }
+                        )
+                    }
+                    "STORAGE" -> {
+                        StorageBottomSheet(
+                            uiState = uiState,
+                            onDismiss = { viewModel.closeDialogOrSheet() }
+                        )
+                    }
+                    "PERMISSIONS" -> {
+                        PermissionsBottomSheet(
+                            uiState = uiState,
+                            onDismiss = { viewModel.closeDialogOrSheet() }
+                        )
+                    }
+                    "PRIVACY" -> {
+                        PrivacyPolicyBottomSheet(
+                            uiState = uiState,
+                            onDismiss = { viewModel.closeDialogOrSheet() }
+                        )
+                    }
+                    "HELP" -> {
+                        HelpManualBottomSheet(
                             uiState = uiState,
                             onDismiss = { viewModel.closeDialogOrSheet() }
                         )

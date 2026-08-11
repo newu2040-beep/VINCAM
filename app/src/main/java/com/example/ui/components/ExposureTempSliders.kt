@@ -49,7 +49,7 @@ fun ExposureTempOverlaySliders(
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 6.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFF1A1A1A))
+            .background(MaterialTheme.colorScheme.surface)
             .border(0.5.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -68,12 +68,12 @@ fun ExposureTempOverlaySliders(
                     Icon(
                         imageVector = Icons.Default.Brightness6,
                         contentDescription = "Exposure",
-                        tint = Color(0xFFFF6321),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         text = "EXPOSURE",
-                        color = Color(0xFFF5F2ED).copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
@@ -95,7 +95,7 @@ fun ExposureTempOverlaySliders(
                     val formattedEv = if (uiState.exposureEv >= 0f) "+%.1f EV".format(uiState.exposureEv) else "%.1f EV".format(uiState.exposureEv)
                     Text(
                         text = formattedEv,
-                        color = Color(0xFFFF6321),
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -107,7 +107,7 @@ fun ExposureTempOverlaySliders(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Darker", color = Color(0xFFF5F2ED).copy(alpha = 0.4f), fontSize = 10.sp)
+                Text("Darker", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), fontSize = 10.sp)
                 Slider(
                     value = uiState.exposureEv,
                     onValueChange = { ev ->
@@ -121,12 +121,12 @@ fun ExposureTempOverlaySliders(
                         .weight(1f)
                         .testTag("exposure_slider"),
                     colors = SliderDefaults.colors(
-                        thumbColor = Color(0xFFFF6321),
-                        activeTrackColor = Color(0xFFFF6321),
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
                         inactiveTrackColor = Color.White.copy(alpha = 0.15f)
                     )
                 )
-                Text("Brighter", color = Color(0xFFF5F2ED).copy(alpha = 0.4f), fontSize = 10.sp)
+                Text("Brighter", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), fontSize = 10.sp)
             }
         }
 
@@ -144,12 +144,12 @@ fun ExposureTempOverlaySliders(
                     Icon(
                         imageVector = Icons.Default.Thermostat,
                         contentDescription = "Temperature",
-                        tint = Color(0xFFFF6321),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         text = "TEMPERATURE",
-                        color = Color(0xFFF5F2ED).copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
@@ -170,7 +170,7 @@ fun ExposureTempOverlaySliders(
                     val tempK = (5500 + (uiState.temperatureOffset * 40).toInt())
                     Text(
                         text = "${tempK}K",
-                        color = Color(0xFFFF6321),
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -194,8 +194,8 @@ fun ExposureTempOverlaySliders(
                     valueRange = -50.0f..50.0f,
                     modifier = Modifier.weight(1f),
                     colors = SliderDefaults.colors(
-                        thumbColor = Color(0xFFFF6321),
-                        activeTrackColor = Color(0xFFFF6321),
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
                         inactiveTrackColor = Color.White.copy(alpha = 0.15f)
                     )
                 )

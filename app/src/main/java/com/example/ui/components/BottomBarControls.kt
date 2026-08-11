@@ -55,6 +55,7 @@ fun BottomBarControls(
     onShutterClicked: () -> Unit,
     onPauseResumeVideo: () -> Unit,
     onOpenGallery: () -> Unit,
+    onOpenLut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "recordingPulse")
@@ -91,7 +92,7 @@ fun BottomBarControls(
                 ) {
                     Text(
                         text = mode.title,
-                        color = if (isSelected) Color(0xFFFF6321) else Color(0xFFF5F2ED).copy(alpha = 0.4f),
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 2.sp
@@ -100,7 +101,7 @@ fun BottomBarControls(
                         modifier = Modifier
                             .size(5.dp)
                             .clip(CircleShape)
-                            .background(if (isSelected) Color(0xFFFF6321) else Color.Transparent)
+                            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
                     )
                 }
             }
@@ -243,15 +244,15 @@ fun BottomBarControls(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF1A1A1A))
+                        .background(MaterialTheme.colorScheme.surface)
                         .border(0.5.dp, Color.White.copy(alpha = 0.15f), CircleShape)
-                        .clickable { onOpenGallery() },
+                        .clickable { onOpenLut() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.AutoFixHigh,
                         contentDescription = "LUT Filters",
-                        tint = Color(0xFFFF6321),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
